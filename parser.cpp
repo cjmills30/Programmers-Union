@@ -26,7 +26,7 @@ vector<string> parseLines(string in_read){
 	size_t SPosition_StripNewline = 0;
 	string strResultAfterStripNewline = "";
 	string strDelimiter_Newline = "\n";
-	while((SPosition_StripNewline = in_read.find(strDelimiter_Newline)) != std::string::npos) {
+	while((SPosition_StripNewline = in_read.find(strDelimiter_Newline)) != -1) { // -1 = no match (formerly std::string::npos)
 		strResultAfterStripNewline += in_read.substr(0,SPosition_StripNewline);
 		in_read.erase(0,SPosition_StripNewline + strDelimiter_Newline.length());
 	}
@@ -35,7 +35,7 @@ vector<string> parseLines(string in_read){
 	size_t SPosition = 0;
 	string strToken = "";
 	string strDelimiter = ";";
-	while((SPosition = strResultAfterStripNewline.find(strDelimiter)) != std::string::npos) {
+	while((SPosition = strResultAfterStripNewline.find(strDelimiter)) != -1) { // -1 = no match (formerly std::string::npos)
 		strToken = strResultAfterStripNewline.substr(0,SPosition);
 		returnResult.push_back(strToken);
 		strResultAfterStripNewline.erase(0,SPosition + strDelimiter.length());
