@@ -6,14 +6,14 @@ template <typename T>
 ostream& operator<< (ostream& out, vector<T> in_vector){
 	//This FINALLY lets you just plain send a vector to cout.
 	//TODO: figure out what those warnings that flash on the compiler are/mean
-	out << "\{";
-	for(int i=0; i < in_vector.size(); ++i){
+	out << "{";
+	for(size_t i=0; i < in_vector.size(); ++i){ // Changed i's type from int to size_t to solve signed/unsigned mismatch
 		out << in_vector[i];
 		if(i != in_vector.size()-1){
 			out << ", ";
 		}
 	}
-	out << "\}";
+	out << "}";
 	return out;
 }
 
