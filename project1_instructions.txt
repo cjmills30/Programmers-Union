@@ -10,9 +10,9 @@ Overview of Deliverables
 See below for details of what you need to submit for each.
 
 Design documents (2/4)
-DBMS engine code (2/11)
-DML Parser integrated with DBMS Engine (2/18)
-Application Integrated with Final Parser and Engine + Report (2/25)
+DBMS engine code (2/10)
+DML Parser integrated with DBMS Engine (2/17)
+Application Integrated with Final Parser and Engine + Report (2/24)
 FAQs and additional clarification:
 
 For the DBMS engine code submission (2/11), You don't need to submit file IO functions since they require the parser.
