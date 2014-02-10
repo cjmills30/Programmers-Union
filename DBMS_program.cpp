@@ -18,6 +18,17 @@ public:
 	string& operator[] (int i) {
 		return data[i];
 	}
+	//goes through a column and deletes an element
+	void deleteCell(int i){
+		vector<string>::iterator itt = data.begin();
+		for(; itt < data.end(); itt++)
+		{
+			if(itt == i)
+			{
+				data.erase(itt);
+			}
+		}
+	}
 private:
 	string name;
 	string type;
@@ -60,6 +71,19 @@ public:
 			returnOutput += "\n";
 		}
 		return out << returnOutput;
+	}
+	//delete function
+	void deleteFrom(string tabname, string comparison){
+		for(size_t i = 0; i<columns[0].getSize(); ++i)  // goes through first column of table
+		{
+			if(columns[0][i] == comparison)  // finds index of the data that matches comparison
+			{
+				for(size_t j = 0; j<columns.size(); j++)  // goes through columns of table
+				{
+					columns[j].deleteCell(i);  // deletes ith cell in each column
+				}
+			}
+		}	
 	}
 private:
 	string name;
