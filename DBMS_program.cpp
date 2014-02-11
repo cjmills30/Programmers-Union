@@ -381,3 +381,84 @@ Table Difference(string newName, string tabName1, string tabName2) {
 
 }
 
+//Product
+Table Product (string newName, string tabName1, string tabName2){
+	vector<Column> tab1, tab2;
+	vector<string> columnNames;
+	vector<string> columnTypes;
+	vector<string> primaryKeys;
+	primaryKeys.push_back("key:product");
+
+	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(tabName1) == 0){
+				tab1 = database[i].getColumns();
+			} else if(database[i].getName().compare(tabName2) == 0) {
+				tab2 = database[i].getColumns();
+			}		
+	}
+
+	Table product = Table(newName, columnNames, columnTypes, primaryKeys);
+
+	for(size_t i = 0; i<tab1[0].getSize(); i++) { //iterate down first column of table 1
+		vector<string> newRow;
+		for(size_t j = 0; i<tab1.size(); j++){    //iterate across row
+			for(size_t k = 0; k < tab2[0].getSize(); k++) { // iterate down first column of table 2
+				for(size_t ii = 0; k<tab2.size(); ii++){ // iterate through rows of column
+					newRow.push_back(tab1[j][i]);        //push value of current row of tab1 with every row of current tab2.
+					newRow.push_back(tab2[ii][k]);
+				}
+			}
+		}
+
+		product.addRow(newRow);
+
+	}
+
+	return product; // returns product
+	
+}
+
+//Join
+Table Join(string newName, string tabName1, string tabName2) {
+	vector<Column> tab1, tab2;
+	bool compatible = true;
+	vector<string> columnNames;
+	vector<string> columnTypes;
+	vector<string> primaryKeys;
+	primaryKeys.push_back("key:difference");
+	
+	
+	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(tabName1) == 0){
+				tab1 = database[i].getColumns();
+			} else if(database[i].getName().compare(tabName2) == 0) {
+				tab2 = database[i].getColumns();
+			}		
+	}
+	
+	Table join = Table(newName, columnNames, columnTypes, primaryKeys);// creates a new table with the column names/types of table 1
+	// execute the joining of tab1 and tab2 
+	bool addrow;
+	for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab1
+		addrow = false;
+		vector<string> row1;
+		for(size_t j = 0; i<tab1.size(); j++) {	// iterates across each row of tab1
+			row1.push_back(tab1[j][i]);
+		}
+		for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab2
+			vector<string> row2;
+			for(size_t j = 0; i<tab2.size(); j++) {	// iterates across each row of tab2
+				row2.push_back(tab2[j][i]);			// pushes into row2 to compare later
+				row1.push_back(tab2[j][i]);         // appends row2 onto row1 in case they are same
+			}
+			if(row1==row2) {		// compare row1 with row2
+				addrow = true;		// if row1 equals row2, then the appended row1 is added to join table
+			}
+		}
+		if(addrow) {
+			join.addRow(row1);
+		}	
+	}
+	return join;	// returns the union if compatible and and empty table otherwise
+
+}
