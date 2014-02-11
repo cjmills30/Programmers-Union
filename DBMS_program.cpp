@@ -286,10 +286,7 @@ int main(){
 			string name = "selection table";
 			string condition = "Col2Cell";
 			string tabName = "test table 2";
-	
 			//Select(name, condition, tabName);
-	
-			
 		} else if(type == 9){ //exit
 			break;
 		}
@@ -322,9 +319,7 @@ Table Project(string newName, vector<string> columnNames, string tabName) {
 			subset = database[i].getColumns(columnNames);
 		}
 	}
-	
 	return Table(newName, subset, primaryKeys);
-
 }
 
 // Renaming (renames the columns)
@@ -352,7 +347,6 @@ Table Union(string newName, string tabName1, string tabName2) {
 	bool compatible = true;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:union");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 		if(database[i].getName().compare(tabName1) == 0){
@@ -395,7 +389,6 @@ Table Difference(string newName, string tabName1, string tabName2) {
 	vector<string> columnTypes;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 		if(database[i].getName().compare(tabName1) == 0){
@@ -443,7 +436,6 @@ Table Difference(string newName, string tabName1, string tabName2) {
 		}	
 	}
 	return difference;	// returns the union if compatible and and empty table otherwise
-
 }
 
 //Product
