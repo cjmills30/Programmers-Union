@@ -3,6 +3,12 @@
 #include <iostream>
 
 class Column{
+	
+private:
+	string name;
+	string type;
+	vector<string> data;
+	
 public:
 	Column(string IN_name, string IN_type){
 		name = IN_name;
@@ -40,14 +46,16 @@ public:
 			}
 		}
 	}
-private:
-	string name;
-	string type;
-	vector<string> data;
 };
 
 
 class Table{
+	
+private:
+	string name;
+	vector<Column> columns;
+	vector<string> primaryKeys;
+	
 public:
 	// constructor
 	Table(string IN_name, vector<string> IN_columnNames, vector<string> IN_columnTypes, vector<string> IN_primaryKeys){
@@ -71,7 +79,6 @@ public:
 	Table() {
 		name = "";
 	}
-	
 	const string getName() {
 		return name;
 	}
@@ -107,12 +114,9 @@ public:
 	}
 	//delete function
 	void deleteFrom(string comparison){
-		for(size_t i = 0; i<columns[0].getSize(); ++i)  // goes through first column of table
-		{
-			if(columns[0][i] == comparison)  // finds index of the data that matches comparison
-			{
-				for(size_t j = 0; j<columns.size(); j++)  // goes through columns of table
-				{
+		for(size_t i = 0; i<columns[0].getSize(); ++i){  // goes through first column of table
+			if(columns[0][i] == comparison){  // finds index of the data that matches comparison
+				for(size_t j = 0; j<columns.size(); j++){  // goes through columns of table
 					columns[j].deleteCell(i);  // deletes ith cell in each column
 				}
 			}
@@ -153,10 +157,6 @@ public:
 		}
 	}
 	*/
-private:
-	string name;
-	vector<Column> columns;
-	vector<string> primaryKeys;
 };
 
 vector<Table> database;
@@ -211,89 +211,88 @@ int main(){
 
 		printf("Type a number for options\n\r");
 		cin>>type;
-	if(type == 0){
-		//CREATE TABLE tabname (name VARCHAR(20), years INTEGER) PRIMARY KEY (name)
-		string name = "test table"; //table being created
-		vector<string> colNames;
-		colNames.push_back("Col1");
-		colNames.push_back("Col2");
-		colNames.push_back("Col3");
-		vector<string> colTypes;
-		colTypes.push_back("int");
-		colTypes.push_back("char(40)");
-		colTypes.push_back("int");
-		vector<string> primaryKeys;
-		primaryKeys.push_back("Col1");
-		//actual work
-		database.push_back(Table(name,colNames,colTypes,primaryKeys));
-		cout<<database.size()<<" tables now live\n\r";
-	} else if(type == 1){
-		//DROP TABLE tabname
-		string name = "test table";
-		//actual work
-		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(name) == 0){
-				database.erase(database.begin()+i);
-				break;
-			}
-		}
-		cout<<"test table removed!\n\r";
-	} else if(type == 2){
-		//INSERT INTO relation-name VALUES FROM (T, T, T)
-		string rndint1, rndint2;
-		rndint1 = to_string(rnd1);
-		rndint2 = to_string(rnd2);
-		string name = "test table";
-		vector<string> row;
-		row.push_back(rndint1);
-		row.push_back("Col2Cell");
-		row.push_back(rndint2);
-		//actual work
-		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(name) == 0){
-				if(database[i].addRow(row) == -1){
-					cout << "Tried to add bad row";
+		
+		if(type == 0){
+			//CREATE TABLE tabname (name VARCHAR(20), years INTEGER) PRIMARY KEY (name)
+			string name = "test table"; //table being created
+			vector<string> colNames;
+			colNames.push_back("Col1");
+			colNames.push_back("Col2");
+			colNames.push_back("Col3");
+			vector<string> colTypes;
+			colTypes.push_back("int");
+			colTypes.push_back("char(40)");
+			colTypes.push_back("int");
+			vector<string> primaryKeys;
+			primaryKeys.push_back("Col1");
+			//actual work
+			database.push_back(Table(name,colNames,colTypes,primaryKeys));
+			cout<<database.size()<<" tables now live\n\r";
+		} else if(type == 1){
+			//DROP TABLE tabname
+			string name = "test table";
+			//actual work
+			for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+				if(database[i].getName().compare(name) == 0){
+					database.erase(database.begin()+i);
+					break;
 				}
 			}
-		}
-	} else if(type == 3){
-		//SHOW tabname
-		string name = "test table";
-		//actual work
-		//getline(cin,name);
-		for(size_t i = 0; i<database.size(); ++i){ //typical "find the table"
-			if(database[i].getName().compare(name) == 0){
-				cout << database[i];
+			cout<<"test table removed!\n\r";
+		} else if(type == 2){
+			//INSERT INTO relation-name VALUES FROM (T, T, T)
+			string rndint1, rndint2;
+			rndint1 = to_string(rnd1);
+			rndint2 = to_string(rnd2);
+			string name = "test table";
+			vector<string> row;
+			row.push_back(rndint1);
+			row.push_back("Col2Cell");
+			row.push_back(rndint2);
+			//actual work
+			for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+				if(database[i].getName().compare(name) == 0){
+					if(database[i].addRow(row) == -1){
+						cout << "Tried to add bad row";
+					}
+				}
 			}
-		}
-		
-	} else if(type == 4) {
-		// UPDATE relation-name SET (column-name = literal) WHERE condition 
-		vector<string> colNames;
-		string name = "test table";
-		string column_name = "Col1";
-		string literal = "12";
-		//string condition_col = "Col1"
-		//string condition_val = "42";
-	
-		//actual work
-		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(name) == 0){
-				//database[i].Update(...);
+		} else if(type == 3){
+			//SHOW tabname
+			string name = "test table";
+			//actual work
+			//getline(cin,name);
+			for(size_t i = 0; i<database.size(); ++i){ //typical "find the table"
+				if(database[i].getName().compare(name) == 0){
+					cout << database[i];
+				}
 			}
-		}
-	} else if(type == 5) { 
-		string name = "selection table";
-		string condition = "Col2Cell";
-		string tabName = "test table 2";
-
-		//Select(name, condition, tabName);
-
+		} else if(type == 4) {
+			// UPDATE relation-name SET (column-name = literal) WHERE condition 
+			vector<string> colNames;
+			string name = "test table";
+			string column_name = "Col1";
+			string literal = "12";
+			//string condition_col = "Col1"
+			//string condition_val = "42";
 		
-	} else if(type == 9){ //exit
-		break;
-	}
+			//actual work
+			for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+				if(database[i].getName().compare(name) == 0){
+					//database[i].Update(...);
+				}
+			}
+		} else if(type == 5) { 
+			string name = "selection table";
+			string condition = "Col2Cell";
+			string tabName = "test table 2";
 	
+			//Select(name, condition, tabName);
+	
+			
+		} else if(type == 9){ //exit
+			break;
+		}
 	}
 }
 
@@ -301,9 +300,9 @@ Table Select(string newName, string condition, string tabName) {
 
 	Table selection;
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName) == 0){
-				selection = database[i];
-			}
+		if(database[i].getName().compare(tabName) == 0){
+			selection = database[i];
+		}
 	}
 	// delete from selection rows that do not meet the condition
 	selection.deleteFrom(condition);
@@ -319,9 +318,9 @@ Table Project(string newName, vector<string> columnNames, string tabName) {
 	primaryKeys.push_back("key:projection");
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName) == 0){
-				subset = database[i].getColumns(columnNames);
-			}
+		if(database[i].getName().compare(tabName) == 0){
+			subset = database[i].getColumns(columnNames);
+		}
 	}
 	
 	return Table(newName, subset, primaryKeys);
@@ -335,9 +334,9 @@ Table Rename(string newName, vector<string> columnNames, string tabName) {
 	primaryKeys.push_back("key:rename");
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName) == 0){
-				subset = database[i].getColumns(columnNames);
-			}
+		if(database[i].getName().compare(tabName) == 0){
+			subset = database[i].getColumns(columnNames);
+		}
 	}
 	if(columnNames.size() == subset.size()) {	// make sure the column counts are matching
 		for(size_t i = 0; i<subset.size(); i++){ 
@@ -356,11 +355,11 @@ Table Union(string newName, string tabName1, string tabName2) {
 	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName1) == 0){
-				tab1 = database[i].getColumns();
-			} else if(database[i].getName().compare(tabName2) == 0) {
-				tab2 = database[i].getColumns();
-			}		
+		if(database[i].getName().compare(tabName1) == 0){
+			tab1 = database[i].getColumns();
+		} else if(database[i].getName().compare(tabName2) == 0) {
+			tab2 = database[i].getColumns();
+		}		
 	}
 	
 	// check for union compatibility
@@ -399,11 +398,11 @@ Table Difference(string newName, string tabName1, string tabName2) {
 	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName1) == 0){
-				tab1 = database[i].getColumns();
-			} else if(database[i].getName().compare(tabName2) == 0) {
-				tab2 = database[i].getColumns();
-			}		
+		if(database[i].getName().compare(tabName1) == 0){
+			tab1 = database[i].getColumns();
+		} else if(database[i].getName().compare(tabName2) == 0) {
+			tab2 = database[i].getColumns();
+		}		
 	}
 	
 	// check for union compatibility
@@ -456,11 +455,11 @@ Table Product (string newName, string tabName1, string tabName2){
 	primaryKeys.push_back("key:product");
 
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName1) == 0){
-				tab1 = database[i].getColumns();
-			} else if(database[i].getName().compare(tabName2) == 0) {
-				tab2 = database[i].getColumns();
-			}		
+		if(database[i].getName().compare(tabName1) == 0){
+			tab1 = database[i].getColumns();
+		} else if(database[i].getName().compare(tabName2) == 0) {
+			tab2 = database[i].getColumns();
+		}		
 	}
 
 	Table product = Table(newName, columnNames, columnTypes, primaryKeys);
@@ -475,13 +474,9 @@ Table Product (string newName, string tabName1, string tabName2){
 				}
 			}
 		}
-
 		product.addRow(newRow);
-
 	}
-
 	return product; // returns product
-	
 }
 
 //Join
@@ -493,13 +488,12 @@ Table Join(string newName, string tabName1, string tabName2) {
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
 	
-	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName1) == 0){
-				tab1 = database[i].getColumns();
-			} else if(database[i].getName().compare(tabName2) == 0) {
-				tab2 = database[i].getColumns();
-			}		
+		if(database[i].getName().compare(tabName1) == 0){
+			tab1 = database[i].getColumns();
+		} else if(database[i].getName().compare(tabName2) == 0) {
+			tab2 = database[i].getColumns();
+		}		
 	}
 	
 	Table join = Table(newName, columnNames, columnTypes, primaryKeys);// creates a new table with the column names/types of table 1
@@ -526,6 +520,5 @@ Table Join(string newName, string tabName1, string tabName2) {
 		}	
 	}
 	return join;	// returns the union if compatible and and empty table otherwise
-
 }
 
