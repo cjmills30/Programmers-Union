@@ -11,6 +11,15 @@ public:
 	void addCell(string IN_string){
 		data.push_back(IN_string);
 	}
+	void setName(string newName) {
+		name = newName;
+	}
+	const string getName() {
+		return name;
+	}
+	const string getType() {
+		return type;
+	}
 	const size_t getSize() {
 		return data.size();
 	}
@@ -21,10 +30,10 @@ public:
 	//goes through a column and deletes a cell (element)
 	void deleteCell(int i)
 	{
-		vector<string>::iterator itt = data.begin();
-		for(; itt < data.end(); itt++)
+		vector<string>::iterator itt;
+		for(itt = data.begin(); itt != data.end(); itt++)
 		{
-			if(itt == i)
+			if((*itt) ==  data[i])
 			{
 				data.erase(itt);
 			}
@@ -38,17 +47,34 @@ private:
 
 class Table{
 public:
+	// constructor
 	Table(string IN_name, vector<string> IN_columnNames, vector<string> IN_columnTypes, vector<string> IN_primaryKeys){
 		name = IN_name;
 		for(size_t i=0;i<IN_columnNames.size();i++){
 			columns.push_back(Column(IN_columnNames[i],IN_columnTypes[i]));
 		}
+		for(size_t i=0;i<IN_primaryKeys.size();i++)	{
+			primaryKeys.push_back(IN_primaryKeys[i]);
+		}
+	}
+	// constructor 
+	Table(string IN_name, vector<Column> IN_columns, vector<string> IN_primaryKeys){
+		name = IN_name;
+		columns = IN_columns;
 		for(size_t i=0;i<IN_primaryKeys.size();i++){
 			primaryKeys.push_back(IN_primaryKeys[i]);
 		}
 	}
+	// another constructor
+	Table() {
+		name = "";
+	}
+	
 	const string getName() {
 		return name;
+	}
+	void setName(string newName) {
+		name = newName;
 	}
 	//use this instead of column.addcell
 	int addRow(vector<string> IN_row){
@@ -64,18 +90,18 @@ public:
 	//used for outputting table
 	friend ostream& operator<< (ostream &out, Table &IN_table){
 		string returnOutput = "";
-		for(size_t i = 0; i<columns[0].getSize(); ++i){
-			for(size_t j = 0; j<columns.size(); ++j){
-				returnOutput += columns[j][i];
+		
+		for(size_t i = 0; i<IN_table.columns[0].getSize(); ++i){	
+			for(size_t j = 0; j<IN_table.columns.size(); ++j){		
+				returnOutput += IN_table.columns[j][i];		
 				returnOutput += "\t";
 			}
 			returnOutput += "\n";
 		}
 		return out << returnOutput;
 	}
-	// DELETE FROM function
-	void deleteFrom(string tabname, string comparison)
-	{
+	//delete function
+	void deleteFrom(string comparison){
 		for(size_t i = 0; i<columns[0].getSize(); ++i)  // goes through first column of table
 		{
 			if(columns[0][i] == comparison)  // finds index of the data that matches comparison
@@ -87,6 +113,41 @@ public:
 			}
 		}	
 	}
+	// returns a vector of columns based on a list of their names
+	vector<Column> getColumns(vector<string> columnNames) {
+		vector<Column> subset;
+		for(size_t i = 0; i<columnNames.size(); ++i) { // goes through the column names
+			for(size_t j = 0; j<columns.size(); ++j) {  // goes through columns of table
+				if( columnNames[i] == columns[j].getName() ) {
+					subset.push_back(columns[j]);		// add the column to the subset if name is in the list
+				}
+			}
+		}
+		return subset;
+	}
+	// returns a vector of all of the columns in the table
+	vector<Column> getColumns() {
+		return columns;
+	}
+	/*
+	int Update(vector<string> IN_columnNames, vector<string> values, vector<int> rows_to_update) {
+		
+		for(size_t k = 0; k<IN_columnNames.size(); ++k) {	// goes through the list of columns to update
+			for(size_t i = 0; i<columns.size(); ++i) {  // goes through the columns of table
+				if(columns[i].getName() == IN_columnNames[k]) {  // find the column needed to update
+					for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the 
+						if(columns[i][j] == condition_val) {	// find the rows with the condition value
+							rows_to_update.push_back(j);		// add the row index to rows_to_update
+						}
+					}
+				}
+			}	
+		//now we know which rows to update
+		for(size_t i = 0; i<columns.getSize(); ++i) {  // goes through the columns of table
+			//if(columns[i].getName() == IN_columnNames
+		}
+	}
+	*/
 private:
 	string name;
 	vector<Column> columns;
@@ -99,7 +160,8 @@ int main(){
 	//Parser goes here.
 	int type = 0;
 	//"type" will emulate parser for time being.
-
+	printf("WELCOME TO THE DBMS!\n");
+		
 	if(type == 0){
 		//CREATE TABLE tabname (name VARCHAR(20), years INTEGER) PRIMARY KEY (name)
 		string name = "test table";
@@ -149,7 +211,165 @@ int main(){
 				cout << database[i];
 			}
 		}
-	}
-
+		
+	} else if(type == 4) {
+		// UPDATE relation-name SET (column-name = literal) WHERE condition 
+		vector<string> colNames;
+		string name = "test table";
+		string column_name = "Col1";
+		string literal = "12";
+		//string condition_col = "Col1"
+		//string condition_val = "42";
+	
+		//actual work
+		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(name) == 0){
+				//database[i].Update(...);
+			}
+		}
+		
+	}	
+	
 	
 }
+
+// Selection
+Table Select(string newName, string condition, string tabName) {
+
+	Table selection;
+	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(tabName) == 0){
+				selection = database[i];
+			}
+	}
+	// delete from selection rows that do not meet the condition
+	selection.deleteFrom(condition);
+	selection.setName(newName);
+	return selection;
+}
+
+// Projection
+Table Project(string newName, vector<string> columnNames, string tabName) {
+	
+	vector<Column> subset;
+	vector<string> primaryKeys;
+	primaryKeys.push_back("key:projection");
+	
+	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(tabName) == 0){
+				subset = database[i].getColumns(columnNames);
+			}
+	}
+	
+	return Table(newName, subset, primaryKeys);
+
+}
+
+// Renaming (renames the columns)
+Table Rename(string newName, vector<string> columnNames, string tabName) {
+	vector<Column> subset;
+	vector<string> primaryKeys;
+	primaryKeys.push_back("key:rename");
+	
+	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(tabName) == 0){
+				subset = database[i].getColumns(columnNames);
+			}
+	}
+	if(columnNames.size() == subset.size()) {	// make sure the column counts are matching
+		for(size_t i = 0; i<subset.size(); i++){ 
+			subset[i].setName(columnNames[i]);	// change the column names
+		}
+	}
+	return Table(newName, subset, primaryKeys);	// returns the table with change column names if the input is correct
+}
+
+// UNION
+Table Union(string newName, string tabName1, string tabName2) {
+	vector<Column> tab1, tab2;
+	bool compatible = true;
+	vector<string> primaryKeys;
+	primaryKeys.push_back("key:union");
+	
+	
+	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(tabName1) == 0){
+				tab1 = database[i].getColumns();
+			} else if(database[i].getName().compare(tabName2) == 0) {
+				tab2 = database[i].getColumns();
+			}		
+	}
+	
+	// check for union compatibility
+	if(tab1.size() != tab2.size()) {
+		compatible = false;
+	} else {
+		for(size_t i = 0; i<tab1.size(); i++) {
+			if(tab1[i].getType() != tab2[i].getType()) {
+				compatible = false;
+			}
+		}
+	}
+	Table onion;			
+	// execute the union of tab1 and tab2 (duplicates are allowed)
+	if(compatible) {
+		onion = Table(newName, tab1, primaryKeys);	// creates a new table with the first tables columns
+		for(size_t i = 0; i<tab2[0].getSize(); i++) {	// iterates down the column
+			vector<string> row;
+			for(size_t j = 0; i<tab2.size(); j++) {	// iterates through the row
+				row.push_back(tab2[j][i]);
+			}
+			onion.addRow(row);
+		}
+	}
+	return onion;	// returns the union if compatible and and empty table otherwise
+}
+
+// DIFFERENCE
+Table Difference(string newName, string tabName1, string tabName2) {
+	vector<Column> tab1, tab2;
+	bool compatible = true;
+	vector<string> columnNames;
+	vector<string> columnTypes;
+	vector<string> primaryKeys;
+	primaryKeys.push_back("key:difference");
+	
+	
+	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(tabName1) == 0){
+				tab1 = database[i].getColumns();
+			} else if(database[i].getName().compare(tabName2) == 0) {
+				tab2 = database[i].getColumns();
+			}		
+	}
+	
+	// check for union compatibility
+	if(tab1.size() != tab2.size()) {
+		compatible = false;
+	} else {
+		for(size_t i = 0; i<tab1.size(); i++) {
+			if(tab1[i].getType() != tab2[i].getType()) {
+				compatible = false;
+			}
+			else {
+				columnTypes.push_back(tab1[i].getType());
+				columnNames.push_back(tab1[i].getName());
+			}
+		}
+	}
+	
+	Table difference = Table(newName, columnNames, columnTypes, primaryKeys);// creates a new table with the column names/types of table 1
+	// execute the difference of tab1 and tab2 (tab1 - tab2)
+	
+	
+	
+	return difference;	// returns the union if compatible and and empty table otherwise
+
+}
+
+
+
+
+
+
+
