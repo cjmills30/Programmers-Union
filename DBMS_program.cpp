@@ -227,10 +227,7 @@ int main(){
 				//database[i].Update(...);
 			}
 		}
-		
 	}	
-	
-	
 }
 
 // Selection
@@ -360,16 +357,27 @@ Table Difference(string newName, string tabName1, string tabName2) {
 	
 	Table difference = Table(newName, columnNames, columnTypes, primaryKeys);// creates a new table with the column names/types of table 1
 	// execute the difference of tab1 and tab2 (tab1 - tab2)
-	
-	
-	
+	bool addrow;
+	for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab1
+		addrow = true;
+		vector<string> row1;
+		for(size_t j = 0; i<tab1.size(); j++) {	// iterates across each row of tab1
+			row1.push_back(tab1[j][i]);
+		}
+		for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab2
+			vector<string> row2;
+			for(size_t j = 0; i<tab2.size(); j++) {	// iterates across each row of tab2
+				row2.push_back(tab2[j][i]);
+			}
+			if(row1==row2) {		// compare row1 with row2
+				addrow = false;		// if row1 equals row2, row1 will not be in the difference table
+			}
+		}
+		if(addrow) {
+			difference.addRow(row1);
+		}	
+	}
 	return difference;	// returns the union if compatible and and empty table otherwise
 
 }
-
-
-
-
-
-
 
