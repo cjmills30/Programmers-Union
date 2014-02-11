@@ -35,13 +35,10 @@ public:
 		return data[i];
 	}
 	//goes through a column and deletes a cell (element)
-	void deleteCell(int i)
-	{
+	void deleteCell(int i)	{
 		vector<string>::iterator itt;
-		for(itt = data.begin(); itt != data.end(); itt++)
-		{
-			if((*itt) ==  data[i])
-			{
+		for(itt = data.begin(); itt != data.end(); itt++){
+			if((*itt) ==  data[i]){
 				data.erase(itt);
 			}
 		}
