@@ -70,7 +70,6 @@ public:
 	Table() {
 		name = "";
 	}
-	
 	const string getName() {
 		return name;
 	}
@@ -137,7 +136,7 @@ public:
 	int Update(vector<string> IN_columnNames, vector<string> values, vector<int> rows_to_update) {
 		
 		for(size_t k = 0; k<IN_columnNames.size(); ++k) {	// goes through the list of columns to update
-			for(size_t i = 0; i<columns.size(); ++i) {  // goes through the columns of table
+			for(size_t i = 0; i<columns.size(); ++i) 	  // goes through the columns of table
 				if(columns[i].getName() == IN_columnNames[k]) {  // find the column needed to update
 					for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the 
 						if(columns[i][j] == condition_val) {	// find the rows with the condition value
@@ -148,7 +147,8 @@ public:
 			}	
 		//now we know which rows to update
 		for(size_t i = 0; i<columns.getSize(); ++i) {  // goes through the columns of table
-			//if(columns[i].getName() == IN_columnNames
+			//if(columns[i].getName() == IN_columnNames){
+			}
 		}
 	}
 	*/
