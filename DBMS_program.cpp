@@ -5,7 +5,26 @@
 
 vector<Table> database;
 
-int main(){
+int main(int IN_nArgs, char* IN_strArgs[]){
+	
+	string commandsFromFile;
+	
+	//TEMP: filename
+	string filename = "input.sql2";
+	
+	//for a file-based input
+	string line;
+	ifstream IN_file (filename);
+	if(IN_file.is_open()){
+		while(getline(myfile,line)){
+			commandsFromFile += line;
+		}
+		IN_file.close();
+	} else {
+		cout << "Unable to open sql2 file";
+	}
+	vector<string> commandsFromFileSeparated (parseLines(commandsFromFile));
+	
 	//Parser goes here.
 	int type = 0;
 	//"type" will emulate parser for time being.
