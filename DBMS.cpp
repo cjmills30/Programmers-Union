@@ -30,9 +30,7 @@ Table Project(string newName, vector<string> columnNames, string tabName, vector
 				subset = database[i].getColumns(columnNames);
 			}
 	}
-	
 	return Table(newName, subset, primaryKeys);
-
 }
 
 // Renaming (renames the columns)
@@ -60,7 +58,6 @@ Table Union(string newName, string tabName1, string tabName2, vector<Table> data
 	bool compatible = true;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:union");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -103,7 +100,6 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 	vector<string> columnTypes;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -182,13 +178,9 @@ Table Product (string newName, string tabName1, string tabName2, vector<Table> d
 				}
 			}
 		}
-
 		product.addRow(newRow);
-
 	}
-
 	return product; // returns product
-	
 }
 
 //Join
@@ -199,7 +191,6 @@ Table Join(string newName, string tabName1, string tabName2, vector<Table> datab
 	vector<string> columnTypes;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -233,5 +224,4 @@ Table Join(string newName, string tabName1, string tabName2, vector<Table> datab
 		}	
 	}
 	return join;	// returns the union if compatible and and empty table otherwise
-
 }
