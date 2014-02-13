@@ -32,9 +32,9 @@ public:
 	void deleteCell(int i)
 	{
 		vector<string>::iterator itt;
-		for(itt = data.begin(); itt != data.end(); itt++)
+		for (itt = data.begin(); itt != data.end(); itt++)
 		{
-			if((*itt) ==  data[i])
+			if ((*itt) == data[i])
 			{
 				data.erase(itt);
 			}
@@ -51,10 +51,10 @@ public:
 	// constructor
 	Table(string IN_name, vector<string> IN_columnNames, vector<string> IN_columnTypes, vector<string> IN_primaryKeys){
 		name = IN_name;
-		for(size_t i=0;i<IN_columnNames.size();i++){
-			columns.push_back(Column(IN_columnNames[i],IN_columnTypes[i]));
+		for (size_t i = 0; i<IN_columnNames.size(); i++){
+			columns.push_back(Column(IN_columnNames[i], IN_columnTypes[i]));
 		}
-		for(size_t i=0;i<IN_primaryKeys.size();i++)	{
+		for (size_t i = 0; i<IN_primaryKeys.size(); i++)	{
 			primaryKeys.push_back(IN_primaryKeys[i]);
 		}
 	}
@@ -62,7 +62,7 @@ public:
 	Table(string IN_name, vector<Column> IN_columns, vector<string> IN_primaryKeys){
 		name = IN_name;
 		columns = IN_columns;
-		for(size_t i=0;i<IN_primaryKeys.size();i++){
+		for (size_t i = 0; i<IN_primaryKeys.size(); i++){
 			primaryKeys.push_back(IN_primaryKeys[i]);
 		}
 	}
@@ -70,6 +70,7 @@ public:
 	Table() {
 		name = "";
 	}
+
 	const string getName() {
 		return name;
 	}
@@ -78,25 +79,26 @@ public:
 	}
 	//use this instead of column.addcell
 	int addRow(vector<string> IN_row){
-		if(columns.size() == IN_row.size()){
-			for(size_t i = 0; i<columns.size(); i++){
+		if (columns.size() == IN_row.size()){
+			for (size_t i = 0; i<columns.size(); i++){
 				columns[i].addCell(IN_row[i]);
 			}
 			return 0;
-		} else {
+		}
+		else {
 			return -1;
 		}
 	}
 	//used for outputting table
 	friend ostream& operator<< (ostream &out, Table &IN_table){
 		string returnOutput = "";
-		
+
 		returnOutput += IN_table.getName();
 		returnOutput += "\n";
-		
-		for(size_t i = 0; i<IN_table.columns[0].getSize(); ++i){	
-			for(size_t j = 0; j<IN_table.columns.size(); ++j){		
-				returnOutput += IN_table.columns[j][i];		
+
+		for (size_t i = 0; i<IN_table.columns[0].getSize(); ++i){
+			for (size_t j = 0; j<IN_table.columns.size(); ++j){
+				returnOutput += IN_table.columns[j][i];
 				returnOutput += "\t";
 			}
 			returnOutput += "\n";
@@ -105,23 +107,23 @@ public:
 	}
 	//delete function
 	void deleteFrom(string comparison){
-		for(size_t i = 0; i<columns[0].getSize(); ++i)  // goes through first column of table
+		for (size_t i = 0; i<columns[0].getSize(); ++i)  // goes through first column of table
 		{
-			if(columns[0][i] == comparison)  // finds index of the data that matches comparison
+			if (columns[0][i] == comparison)  // finds index of the data that matches comparison
 			{
-				for(size_t j = 0; j<columns.size(); j++)  // goes through columns of table
+				for (size_t j = 0; j<columns.size(); j++)  // goes through columns of table
 				{
 					columns[j].deleteCell(i);  // deletes ith cell in each column
 				}
 			}
-		}	
+		}
 	}
 	// returns a vector of columns based on a list of their names
 	vector<Column> getColumns(vector<string> columnNames) {
 		vector<Column> subset;
-		for(size_t i = 0; i<columnNames.size(); ++i) { // goes through the column names
-			for(size_t j = 0; j<columns.size(); ++j) {  // goes through columns of table
-				if( columnNames[i] == columns[j].getName() ) {
+		for (size_t i = 0; i<columnNames.size(); ++i) { // goes through the column names
+			for (size_t j = 0; j<columns.size(); ++j) {  // goes through columns of table
+				if (columnNames[i] == columns[j].getName()) {
 					subset.push_back(columns[j]);		// add the column to the subset if name is in the list
 				}
 			}
@@ -134,22 +136,21 @@ public:
 	}
 	/*
 	int Update(vector<string> IN_columnNames, vector<string> values, vector<int> rows_to_update) {
-		
-		for(size_t k = 0; k<IN_columnNames.size(); ++k) {	// goes through the list of columns to update
-			for(size_t i = 0; i<columns.size(); ++i) 	  // goes through the columns of table
-				if(columns[i].getName() == IN_columnNames[k]) {  // find the column needed to update
-					for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the 
-						if(columns[i][j] == condition_val) {	// find the rows with the condition value
-							rows_to_update.push_back(j);		// add the row index to rows_to_update
-						}
-					}
-				}
-			}	
-		//now we know which rows to update
-		for(size_t i = 0; i<columns.getSize(); ++i) {  // goes through the columns of table
-			//if(columns[i].getName() == IN_columnNames){
-			}
-		}
+
+	for(size_t k = 0; k<IN_columnNames.size(); ++k) {	// goes through the list of columns to update
+	for(size_t i = 0; i<columns.size(); ++i) {  // goes through the columns of table
+	if(columns[i].getName() == IN_columnNames[k]) {  // find the column needed to update
+	for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the
+	if(columns[i][j] == condition_val) {	// find the rows with the condition value
+	rows_to_update.push_back(j);		// add the row index to rows_to_update
+	}
+	}
+	}
+	}
+	//now we know which rows to update
+	for(size_t i = 0; i<columns.getSize(); ++i) {  // goes through the columns of table
+	//if(columns[i].getName() == IN_columnNames
+	}
 	}
 	*/
 private:
@@ -165,5 +166,7 @@ Table Union(string newName, string tabName1, string tabName2,vector<Table> datab
 Table Difference(string newName, string tabName1, string tabName2,vector<Table> database);
 Table Product (string newName, string tabName1, string tabName2,vector<Table> database);
 Table Join(string newName, string tabName1, string tabName2,vector<Table> database);
+
+void Show(string tabname, vector<Table> database);
 
 
