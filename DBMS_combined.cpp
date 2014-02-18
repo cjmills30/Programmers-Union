@@ -2,8 +2,6 @@
 #include <string>
 #include <iostream>
 
-vector<string> parseCommand(string IN_string);
-
 template <typename T>
 ostream& operator<< (ostream& out, vector<T> in_vector){
 	//This FINALLY lets you just plain send a vector to cout.
@@ -17,62 +15,6 @@ ostream& operator<< (ostream& out, vector<T> in_vector){
 	}
 	out << "}";
 	return out;
-}
-
-vector<vector<string>> parseLines(string in_read){
-	vector<vector<string>> returnThis;
-	
-	vector<string> returnResult;
-	
-	// This section strips all \n characters from in_read.
-	size_t SPosition_StripNewline = 0;
-	string strResultAfterStripNewline = "";
-	string strDelimiter_Newline = "\n";
-	while((SPosition_StripNewline = in_read.find(strDelimiter_Newline)) != -1) { // -1 = no match (formerly std::string::npos)
-		strResultAfterStripNewline += in_read.substr(0,SPosition_StripNewline);
-		in_read.erase(0,SPosition_StripNewline + strDelimiter_Newline.length());
-	}
-
-	// This section turns each full command (xxxxx xxx;yy yyyy yy;) into its own string and puts into a vector<string>.
-	size_t SPosition = 0;
-	string strToken = "";
-	string strDelimiter = ";";
-	while((SPosition = strResultAfterStripNewline.find(strDelimiter)) != -1) { // -1 = no match (formerly std::string::npos)
-		strToken = strResultAfterStripNewline.substr(0,SPosition);
-		returnResult.push_back(strToken);
-		strResultAfterStripNewline.erase(0,SPosition + strDelimiter.length());
-	}
-
-	for(size_t i=0;i<returnResult.size(); ++i){
-		vector<string> extractedInfo;
-		if(returnResult[i].substring(0,6).compare("CREATE")){ // do this
-			extractedInfo.push_back("CREATE");
-		} else if(returnResult[i].substring(0,6).compare("INSERT"){ // do this
-			extractedInfo.push_back("INSERT");
-			//extractedIndo.push_back(returnResult[i
-		} else if(returnResult[i].substring(0,4).compare("SHOW"){
-			extractedInfo.push_back("SHOW");
-			extractedInfo.push_back(returnResult[i].substring(5,returnResult[i].length()));
-		} else if(returnResult[i].substring(0,5).compare("WRITE"){ // do this
-			extractedInfo.push_back("WRITE");
-		} else if(returnResult[i].substring(0,4).compare("OPEN"){ // do this
-			extractedInfo.push_back("OPEN");
-		} else if(returnResult[i].substring(0,6).compare("DELETE"){ // do this
-			extractedInfo.push_back("DELETE");
-		} else if(returnResult[i].find("<-") > 0){
-			extractedInfo.push_back("<-");
-			extractedInfo.push_back(returnResult[i].substring(0,returnResult[i].find("<-")-1);
-			extractedInfo.push_back(returnResult[i].substring(returnResult[i].find("<-")+3,returnResult[i].length()));
-		}
-		returnThis.push_back(extractedInfo);
-	}
-	
-	//Done!
-	return returnThis;
-}
-
-vector<string> parseCommand(string IN_string){
-	if(IN_string)
 }
 
 class Column{
@@ -226,21 +168,13 @@ public:
 	}
 	}
 	*/
+	
 private:
 	string name;
 	vector<Column> columns;
 	vector<string> primaryKeys;
 };
 
-Table Select(string newName, string condition, string tabName,vector<Table> database);
-Table Project(string newName, vector<string> columnNames, string tabName,vector<Table> database);
-Table Rename(string newName, vector<string> columnNames, string tabName,vector<Table> database);
-Table Union(string newName, string tabName1, string tabName2,vector<Table> database);
-Table Difference(string newName, string tabName1, string tabName2,vector<Table> database);
-Table Product (string newName, string tabName1, string tabName2,vector<Table> database);
-Table Join(string newName, string tabName1, string tabName2,vector<Table> database);
-
-void Show(string tabname, vector<Table> database);
 
 vector<Table> database;
 
@@ -486,134 +420,40 @@ void Show(string name, vector<Table> database){
 }
 
 
-
-int main(){
-	//Parser goes here.
-	int type = 0;
-	//"type" will emulate parser for time being.
-	printf("WELCOME TO THE DBMS!\n");
-
-	/***********************************************************************/
-	//Tables for testing
-	string name = "test table";
+void parser(string IN_string){
+	if(IN_string.substr(0,6).compare("CREATE")){ // do this
+		string name;
 		vector<string> colNames;
-		colNames.push_back("Col1");
-		colNames.push_back("Col2");
-		colNames.push_back("Col3");
 		vector<string> colTypes;
-		colTypes.push_back("int");
-		colTypes.push_back("char(40)");
-		colTypes.push_back("int");
 		vector<string> primaryKeys;
-		primaryKeys.push_back("Col1");
-		//actual work
+		size_t loc = 0;
+		loc = IN_string.find("TABLE");
+		if(loc > 0){
+			name = IN_string.substr(loc+6,IN_string.find(" ",loc+6));
+			cout << "name: " << name << "\n";
+		}
 		database.push_back(Table(name,colNames,colTypes,primaryKeys));
-
-		string name2 = "test table 2";
-		vector<string> colNames2;
-		colNames2.push_back("Col12");
-		colNames2.push_back("Col22");
-		colNames2.push_back("Col32");
-		vector<string> colTypes2;
-		colTypes2.push_back("int");
-		colTypes2.push_back("char(40)");
-		colTypes2.push_back("int");
-		vector<string> primaryKeys2;
-		primaryKeys2.push_back("Col12");
-		//actual work
-		database.push_back(Table(name2,colNames2,colTypes2,primaryKeys2));
-
-		cout<<database.size()<<" tables automatically created\n";
-
-		cout<<"0: Creates another table called test table\n\r";
-		cout<<"1: Will drop or remove test table\n\r";
-		cout<<"2: Will add a new row everytime with random numbers to every table called test table\n\r";
-		cout<<"3: Will display test table\n\r";
-		cout<<"9: exit\n\r";
-	
-	while(1){
-		int rnd1 = rand() %100 + 1;
-		int rnd2 = rand() %100 + 1;
-
-		printf("Type a number for options\n\r");
-		cin>>type;
-	if(type == 0){
-		//CREATE TABLE tabname (name VARCHAR(20), years INTEGER) PRIMARY KEY (name)
-		string name = "test table"; //table being created
-		vector<string> colNames;
-		colNames.push_back("Col1");
-		colNames.push_back("Col2");
-		colNames.push_back("Col3");
-		vector<string> colTypes;
-		colTypes.push_back("int");
-		colTypes.push_back("char(40)");
-		colTypes.push_back("int");
-		vector<string> primaryKeys;
-		primaryKeys.push_back("Col1");
-		//actual work
-		database.push_back(Table(name,colNames,colTypes,primaryKeys));
-		cout<<database.size()<<" tables now live\n\r";
-	} else if(type == 1){
-		//DROP TABLE tabname
-		string name = "test table";
-		//actual work
-		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(name) == 0){
-				database.erase(database.begin()+i);
-				break;
-			}
-		}
-		cout<<"test table removed!\n\r";
-	} else if(type == 2){
-		//INSERT INTO relation-name VALUES FROM (T, T, T)
-		string rndint1, rndint2;
-		rndint1 = to_string(rnd1);
-		rndint2 = to_string(rnd2);
-		string name = "test table";
-		vector<string> row;
-		row.push_back(rndint1);
-		row.push_back("Col2Cell");
-		row.push_back(rndint2);
-		//actual work
-		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(name) == 0){
-				if(database[i].addRow(row) == -1){
-					cout << "Tried to add bad row";
-				}
-			}
-		}
-	} else if(type == 3){
-		//SHOW tabname
-		string name = "test table";
-		Show(name, database);
+	} else if(IN_string.substr(0,6).compare("INSERT")){ // do this
 		
-	} else if(type == 4) {
-		// UPDATE relation-name SET (column-name = literal) WHERE condition 
-		vector<string> colNames;
-		string name = "test table";
-		string column_name = "Col1";
-		string literal = "12";
-		//string condition_col = "Col1"
-		//string condition_val = "42";
-	
-		//actual work
-		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(name) == 0){
-				//database[i].Update(...);
-			}
-		}
-	} else if(type == 5) { 
-		string name = "selection table";
-		string condition = "Col2Cell";
-		string tabName = "test table 2";
-
-		//Select(name, condition, tabName);
-
+	} else if(IN_string.substr(0,4).compare("SHOW")){
 		
-	} else if(type == 9){ //exit
-		break;
-	}
-	
+	} else if(IN_string.substr(0,5).compare("WRITE")){ // do this
+		
+	} else if(IN_string.substr(0,4).compare("OPEN")){ // do this
+		
+	} else if(IN_string.substr(0,6).compare("DELETE")){ // do this
+		
+	} else if(IN_string.find("<-") > 0){
+		
 	}
 }
 
+int main(){
+	printf("WELCOME TO THE DBMS!\n");
+	for(;;){
+		printf(">");
+		string commandIN;
+		getline(cin,commandIN);
+		//parser(commandIN);
+	}
+}
