@@ -1,11 +1,17 @@
+//
+// IMPORTANT: TO COMPILE:
+//	g++ -std=c++11 -static-libstdc++ DBMS_combined.cpp
+// ERRORS CORRELATE, BUT DO NOT NECESSARILY CORRESPOND TO LINE NUMBERS
+//	Don't waste your time updating the error numbers unless it is absolutely crucial to what you are doing.
+
 #include "std_lib_facilities_4.h"
 #include <string>
 #include <iostream>
 
+using namespace std;
+
 template <typename T>
 ostream& operator<< (ostream& out, vector<T> in_vector){
-	//This FINALLY lets you just plain send a vector to cout.
-	//TODO: figure out what those warnings that flash on the compiler are/mean
 	out << "{";
 	for(size_t i=0; i < in_vector.size(); ++i){ // Changed i's type from int to size_t to solve signed/unsigned mismatch
 		out << in_vector[i];
@@ -303,27 +309,52 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 	}
 	
 	Table difference = Table(newName, columnNames, columnTypes, primaryKeys);// creates a new table with the column names/types of table 1
+	/***********************************************************************/
+	//           SEE TESTING CODE BELOW-THIS CODE DIDN'T WORK PROPERLY     //
+	/***********************************************************************/
+	
 	// execute the difference of tab1 and tab2 (tab1 - tab2)
-	bool addrow;
+	/*bool addrow;
 	for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab1
 		addrow = true;
 		vector<string> row1;
-		for(size_t j = 0; i<tab1.size(); j++) {	// iterates across each row of tab1
+		vector<string> finalRow;
+		for(size_t j = 0; j<tab1.size(); j++) {	// iterates across each row of tab1
 			row1.push_back(tab1[j][i]);
+			//cout << row1[j];
 		}
 		for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab2
 			vector<string> row2;
-			for(size_t j = 0; i<tab2.size(); j++) {	// iterates across each row of tab2
+			for(size_t j = 0; j<tab2.size(); j++) {	// iterates across each row of tab2
 				row2.push_back(tab2[j][i]);
+				//cout << row2[j];
 			}
 			if(row1==row2) {		// compare row1 with row2
-				addrow = false;		// if row1 equals row2, row1 will not be in the difference table
+				
+				finalRow.push_back("");		// if row1 equals row2, row1 will not be in the difference table
 			}
 		}
 		if(addrow) {
-			difference.addRow(row1);
+			difference.addRow(finalRow);
 		}	
+	}*/
+
+	///////////////////////////////////////////////////////
+	//                TESTING DIFFERENT CODE             //
+	///////////////////////////////////////////////////////
+	/*************** Proper Output ***********************/
+	vector<string> testrow;
+	for (size_t i = 0; i < tab1[0].getSize(); i++){
+		for (size_t j = 0; j < tab2.size(); j++){
+			if (tab1[j][i] != tab2[j][i])
+				testrow.push_back(tab1[j][i]);
+			else
+				testrow.push_back("");                     //Currently inputs blanks for when values are same
+		}
 	}
+	difference.addRow(testrow);
+
+		
 	return difference;	// returns the union if compatible and and empty table otherwise
 
 }
@@ -419,34 +450,225 @@ void Show(string name, vector<Table> database){
 	
 }
 
+void writeTable(Table IN_table) {}
+
+void openTable(Table IN_table) {}
+
+void createRelationTable(string IN_name, string IN_commands) {}
+
+void insertFromRelation(string IN_name, string IN_relation) {}
+
+void deleteData(string IN_name, string IN_relation) {}
 
 void parser(string IN_string){
-	if(IN_string.substr(0,6).compare("CREATE")){ // do this
+	IN_string += "      ";
+	if(IN_string.substr(0,6).compare("CREATE") == 0){ // do this
 		string name;
 		vector<string> colNames;
 		vector<string> colTypes;
 		vector<string> primaryKeys;
-		size_t loc = 0;
-		loc = IN_string.find("TABLE");
-		if(loc > 0){
-			name = IN_string.substr(loc+6,IN_string.find(" ",loc+6));
-			cout << "name: " << name << "\n";
+		size_t locTABLE = 0;
+		locTABLE = IN_string.find("TABLE");
+		if(locTABLE != string::npos){
+			if(IN_string.find(' ',locTABLE+6) == string::npos){
+				cout << "Argument list of bad form. (E448)\n";
+				return;
+			}
+			name = IN_string.substr(locTABLE+6,IN_string.find(' ',locTABLE+6)-(locTABLE+6));
+			//cout << "Name: \"" << name << "\"\n";
+		} else{
+			cout << "Please specify a name. (E454)\n";
+			return;
 		}
+		size_t locColParenthesis = 0;
+		size_t locColName = 0;
+		size_t locColType = 0;
+		if(IN_string.find("(",locTABLE) == string::npos){
+			cout << "Argument list of bad form. (E461)\n";
+			return;
+		}
+		locColParenthesis = IN_string.find("(",locTABLE) + 1;
+		for(;;){
+			//cout << "In for loop - ";
+			locColName = IN_string.find(' ',locColParenthesis);
+			colNames.push_back(IN_string.substr(locColParenthesis,locColName-locColParenthesis));
+			if(IN_string.find(',',locColName) == string::npos && IN_string.find(')',locColName) == string::npos){
+				cout << "Argument list of bad form. (E470)\n";
+				//cout << locColName << " - " << 
+				return;
+			} else if(IN_string.find(',',locColName) < IN_string.rfind(')',locColName)){
+				//cout << locColParenthesis << " (->) ";
+				locColType = IN_string.find(',',locColName);
+				colTypes.push_back(IN_string.substr(locColName+1,locColType-(locColName+1)));
+				locColParenthesis = locColType+2;
+				//cout << locColName << " - " << locColType << " (->) " << locColParenthesis << endl;
+			} else{
+				//cout << locColParenthesis << " (->) ";
+				locColType = IN_string.find(')',locColName);
+				colTypes.push_back(IN_string.substr(locColName+1,locColType-(locColName+1)));
+				//cout << locColName << " - " << locColType << " (->) x" << endl;
+				break;
+			}
+		}
+		//cout << colNames << endl << colTypes << endl;
+		size_t locPRIMARYKEY = 0;
+		if(IN_string.find("PRIMARY KEY") == string::npos){
+			cout << "Please specify a primary key. (E490)\n";
+			return;
+		}
+		locPRIMARYKEY = IN_string.find("PRIMARY KEY")+13;
+		size_t locNextPRIMARYKEY = 0;
+		for(;;){
+			if(IN_string.find(',',locPRIMARYKEY) == string::npos && IN_string.find(')',locPRIMARYKEY) == string::npos){
+				cout << "Argument list of bad form. (E497)\n";
+				return;
+			}
+			if(IN_string.find(',',locPRIMARYKEY) < IN_string.find(')',locPRIMARYKEY)){
+				locNextPRIMARYKEY = IN_string.find(',',locPRIMARYKEY);
+				string tempPRIMARYKEY = IN_string.substr(locPRIMARYKEY,locNextPRIMARYKEY-locPRIMARYKEY);
+				bool foundPRIMARYKEY = false;
+				for(int i=0; i<colNames.size(); ++i){
+					if(colNames[i].compare(tempPRIMARYKEY) == 0){
+						primaryKeys.push_back(tempPRIMARYKEY);
+						foundPRIMARYKEY = true;
+						break;
+					}
+				}
+				if(!foundPRIMARYKEY){
+					cout << "Primary Key Mismatch (E512)\n";
+					return;
+				}
+				locNextPRIMARYKEY += 2;
+			} else {
+				locNextPRIMARYKEY = IN_string.find(')',locPRIMARYKEY);
+				primaryKeys.push_back(IN_string.substr(locPRIMARYKEY,locNextPRIMARYKEY-locPRIMARYKEY));
+				break;
+			}
+		}
+		//cout << primaryKeys << endl;
 		database.push_back(Table(name,colNames,colTypes,primaryKeys));
-	} else if(IN_string.substr(0,6).compare("INSERT")){ // do this
+		return;
+	} else if(IN_string.substr(0,6).compare("INSERT") == 0){ // do this
+		if(IN_string.find("INTO") == string::npos){
+			cout << "Specify a table to insert values into (E527)\n";
+			return;
+		}
+		size_t locINTO = IN_string.find("INTO")+5;
+		if(IN_string.find(' ',locINTO) == string::npos){
+			cout << "Argument list of bad form. (E532)\n";
+			return;
+		}
+		string targetTable = IN_string.substr(locINTO,IN_string.find(' ',locINTO)-locINTO);
+		bool targetFound = false;
+		int targetLocation = -1;
+		for(int i=0; i<database.size(); ++i){
+			if(database[i].getName().compare(targetTable) == 0){
+				targetLocation = i;
+				targetFound = true;
+				break;
+			}
+		}
+		if(!targetFound) {
+			cout << "Table not found. (E546)\n";
+			return;
+		}
+		if(IN_string.find("VALUES FROM ") == string::npos){
+			cout << "Specify values to insert. (E550)\n";
+			return;
+		}
+		size_t locVALUESFROM = IN_string.find("VALUES FROM ")+12;
+		if(IN_string.substr(locVALUESFROM,8).compare("RELATION") == 0){
+			insertFromRelation(targetTable,IN_string.substr(locVALUESFROM+9,IN_string.rfind(';')-(locVALUESFROM+9)));
+			return;
+		} else {
+			locVALUESFROM++;
+			vector<string> getValues;
+			while(IN_string.find(',',locVALUESFROM) != string::npos){
+				getValues.push_back(IN_string.substr(locVALUESFROM,IN_string.find(',',locVALUESFROM)-locVALUESFROM));
+				locVALUESFROM = IN_string.find(',',locVALUESFROM)+2;
+			}
+			getValues.push_back(IN_string.substr(locVALUESFROM,IN_string.find(')',locVALUESFROM)-locVALUESFROM));
+			if(database[targetLocation].addRow(getValues) == -1){
+				cout << "Column/Data Mismatch (E566)\n";
+				return;
+			}
+			return;
+		}
+	} else if(IN_string.substr(0,4).compare("SHOW") == 0){
+		string inTable = IN_string.substr(5,IN_string.rfind(";"));
+		for(int i=0; i<database.size(); ++i){
+			if(database[i].getName().compare(inTable) == 0) {
+				//cout << database[i] << endl;
+				return;
+			}
+		}
+		cout << "No such table exists (E579)\n";
+		return;
+	} else if(IN_string.substr(0,5).compare("WRITE") == 0){ // do this
+		string inTable = IN_string.substr(6,IN_string.rfind(";"));
+		for(int i=0; i<database.size(); ++i){
+			if(database[i].getName().compare(inTable) == 0) {
+				writeTable(database[i]);
+				return;
+			}
+		}
+		cout << "No such table exists (E589)\n";
+		return;
+	} else if(IN_string.substr(0,4).compare("OPEN") == 0){ // do this
+		string inTable = IN_string.substr(5,IN_string.rfind(";"));
+		for(int i=0; i<database.size(); ++i){
+			if(database[i].getName().compare(inTable) == 0) {
+				openTable(database[i]);
+				return;
+			}
+		}
+		cout << "No such table exists (E599)\n";
+		return;
+	} else if(IN_string.substr(0,6).compare("DELETE") == 0){ // do this
+		if(IN_string.find("FROM") == string::npos){
+			cout << "Specify a table (E603)\n";
+			return;
+		}
+		size_t locFROM = IN_string.find("FROM")+5;
+		if(IN_string.find(' ',locFROM) == string::npos){
+			cout << "Argument list of bad form. (E608)\n";
+			return;
+		}
+		string targetTable = IN_string.substr(locFROM,IN_string.find(' ',locFROM)-locFROM);
+		bool targetFound = false;
+		int targetLocation = -1;
+		for(int i=0; i<database.size(); ++i){
+			if(database[i].getName().compare(targetTable) == 0){
+				targetLocation = i;
+				targetFound = true;
+				break;
+			}
+		}
+		if(!targetFound) {
+			cout << "Table not found. (E622)\n";
+			return;
+		}
+		if(IN_string.find("WHERE") == string::npos){
+			cout << "Specify a relation (E626)\n";
+			return;
+		}
+		size_t locWHERE = IN_string.find("WHERE")+6;
+		string getCondition = IN_string.substr(locWHERE,IN_string.rfind(';')-locWHERE);
+		deleteData(targetTable, getCondition);
+		return;
 		
-	} else if(IN_string.substr(0,4).compare("SHOW")){
-		
-	} else if(IN_string.substr(0,5).compare("WRITE")){ // do this
-		
-	} else if(IN_string.substr(0,4).compare("OPEN")){ // do this
-		
-	} else if(IN_string.substr(0,6).compare("DELETE")){ // do this
-		
-	} else if(IN_string.find("<-") > 0){
-		
+	} else if(IN_string.find("<-") > 1){
+		size_t locArrow = IN_string.find("<-");
+		string tempName = IN_string.substr(0,locArrow-1);
+		string tempCommand = IN_string.substr(locArrow+3,IN_string.length());
+		createRelationTable(tempName,tempCommand);
+	} else {
+		cout << "Invalid command. (E640)\n";
+		return;
 	}
+	cout << "Invalid command. (E643)\n";
 }
+
 
 int main(){
 	printf("WELCOME TO THE DBMS!\n");
@@ -454,6 +676,6 @@ int main(){
 		printf(">");
 		string commandIN;
 		getline(cin,commandIN);
-		//parser(commandIN);
+		parser(commandIN);
 	}
 }
