@@ -1,6 +1,9 @@
 #include "std_lib_facilities_4.h"
+//#include <vector>
 #include <string>
 #include <iostream>
+
+using namespace std;
 
 template <typename T>
 ostream& operator<< (ostream& out, vector<T> in_vector){
@@ -421,32 +424,106 @@ void Show(string name, vector<Table> database){
 
 
 void parser(string IN_string){
-	if(IN_string.substr(0,6).compare("CREATE")){ // do this
+	if(IN_string.substr(0,6).compare("CREATE") == 0){ // do this
 		string name;
 		vector<string> colNames;
 		vector<string> colTypes;
 		vector<string> primaryKeys;
-		size_t loc = 0;
-		loc = IN_string.find("TABLE");
-		if(loc > 0){
-			name = IN_string.substr(loc+6,IN_string.find(" ",loc+6));
-			cout << "name: " << name << "\n";
+		size_t locTABLE = 0;
+		locTABLE = IN_string.find("TABLE");
+		if(locTABLE != string::npos){
+			if(IN_string.find(' ',locTABLE+6) == string::npos){
+				cout << "Argument list of bad form. (E437)\n";
+				return;
+			}
+			name = IN_string.substr(locTABLE+6,IN_string.find(' ',locTABLE+6)-(locTABLE+6));
+			cout << "Name: \"" << name << "\"\n";
+		} else{
+			cout << "Please specify a name. (E441)\n";
+			return;
 		}
+		size_t locColParenthesis = 0;
+		size_t locColName = 0;
+		size_t locColType = 0;
+		if(IN_string.find("(",locTABLE) == string::npos){
+			cout << "Argument list of bad form. (E448)\n";
+			return;
+		}
+		locColParenthesis = IN_string.find("(",locTABLE) + 1;
+		for(;;){
+			cout << "In for loop - ";
+			locColName = IN_string.find(' ',locColParenthesis);
+			colNames.push_back(IN_string.substr(locColParenthesis,locColName-locColParenthesis));
+			if(IN_string.find(',',locColName) == string::npos && IN_string.find(')',locColName) == string::npos){
+				cout << "Argument list of bad form. (E456)\n";
+				//cout << locColName << " - " << 
+				return;
+			} else if(IN_string.find(',',locColName) < IN_string.rfind(')',locColName)){
+				cout << locColParenthesis << " (->) ";
+				locColType = IN_string.find(',',locColName);
+				colTypes.push_back(IN_string.substr(locColName+1,locColType-(locColName+1)));
+				locColParenthesis = locColType+2;
+				cout << locColName << " - " << locColType << " (->) " << locColParenthesis << endl;
+			} else{
+				cout << locColParenthesis << " (->) ";
+				locColType = IN_string.find(')',locColName);
+				colTypes.push_back(IN_string.substr(locColName+1,locColType-(locColName+1)));
+				cout << locColName << " - " << locColType << " (->) x" << endl;
+				break;
+			}
+		}
+		cout << colNames << endl << colTypes << endl;
+		size_t locPRIMARYKEY = 0;
+		if(IN_string.find("PRIMARY KEY") == string::npos){
+			cout << "Please specify a primary key. (E478)\n";
+			return;
+		}
+		locPRIMARYKEY = IN_string.find("PRIMARY KEY")+13;
+		size_t locNextPRIMARYKEY = 0;
+		for(;;){
+			if(IN_string.find(',',locPRIMARYKEY) == string::npos && IN_string.find(')',locPRIMARYKEY) == string::npos){
+				cout << "Argument list of bad form. (E485)\n";
+				return;
+			}
+			if(IN_string.find(',',locPRIMARYKEY) < IN_string.find(')',locPRIMARYKEY)){
+				locNextPRIMARYKEY = IN_string.find(',',locPRIMARYKEY);
+				string tempPRIMARYKEY = IN_string.substr(locPRIMARYKEY,locNextPRIMARYKEY-locPRIMARYKEY);
+				bool foundPRIMARYKEY = false;
+				for(int i=0; i<colNames.size(); ++i){
+					if(colNames[i].compare(tempPRIMARYKEY) == 0){
+						primaryKeys.push_back(tempPRIMARYKEY);
+						foundPRIMARYKEY = true;
+						break;
+					}
+				}
+				if(!foundPRIMARYKEY){
+					cout << "Primary Key Mismatch (E500)\n";
+					return;
+				}
+				locNextPRIMARYKEY += 2;
+			} else {
+				locNextPRIMARYKEY = IN_string.find(')',locPRIMARYKEY);
+				primaryKeys.push_back(IN_string.substr(locPRIMARYKEY,locNextPRIMARYKEY-locPRIMARYKEY));
+				break;
+			}
+		}
+		cout << primaryKeys << endl;
 		database.push_back(Table(name,colNames,colTypes,primaryKeys));
-	} else if(IN_string.substr(0,6).compare("INSERT")){ // do this
+	} else if(IN_string.substr(0,6).compare("INSERT") == 0){ // do this
 		
-	} else if(IN_string.substr(0,4).compare("SHOW")){
+	} else if(IN_string.substr(0,4).compare("SHOW") == 0){
 		
-	} else if(IN_string.substr(0,5).compare("WRITE")){ // do this
+	} else if(IN_string.substr(0,5).compare("WRITE") == 0){ // do this
 		
-	} else if(IN_string.substr(0,4).compare("OPEN")){ // do this
+	} else if(IN_string.substr(0,4).compare("OPEN") == 0){ // do this
 		
-	} else if(IN_string.substr(0,6).compare("DELETE")){ // do this
+	} else if(IN_string.substr(0,6).compare("DELETE") == 0){ // do this
 		
 	} else if(IN_string.find("<-") > 0){
 		
 	}
 }
+
 
 int main(){
 	printf("WELCOME TO THE DBMS!\n");
@@ -454,6 +531,6 @@ int main(){
 		printf(">");
 		string commandIN;
 		getline(cin,commandIN);
-		//parser(commandIN);
+		parser(commandIN);
 	}
 }
