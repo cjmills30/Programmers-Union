@@ -128,27 +128,52 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 	}
 	
 	Table difference = Table(newName, columnNames, columnTypes, primaryKeys);// creates a new table with the column names/types of table 1
+	/***********************************************************************/
+	//           SEE TESTING CODE BELOW-THIS CODE DIDN'T WORK PROPERLY     //
+	/***********************************************************************/
+	
 	// execute the difference of tab1 and tab2 (tab1 - tab2)
-	bool addrow;
+	/*bool addrow;
 	for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab1
 		addrow = true;
 		vector<string> row1;
-		for(size_t j = 0; i<tab1.size(); j++) {	// iterates across each row of tab1
+		vector<string> finalRow;
+		for(size_t j = 0; j<tab1.size(); j++) {	// iterates across each row of tab1
 			row1.push_back(tab1[j][i]);
+			//cout << row1[j];
 		}
 		for(size_t i = 0; i<tab1[0].getSize(); i++) {	// iterates down the first column of tab2
 			vector<string> row2;
-			for(size_t j = 0; i<tab2.size(); j++) {	// iterates across each row of tab2
+			for(size_t j = 0; j<tab2.size(); j++) {	// iterates across each row of tab2
 				row2.push_back(tab2[j][i]);
+				//cout << row2[j];
 			}
 			if(row1==row2) {		// compare row1 with row2
-				addrow = false;		// if row1 equals row2, row1 will not be in the difference table
+				
+				finalRow.push_back("");		// if row1 equals row2, row1 will not be in the difference table
 			}
 		}
 		if(addrow) {
-			difference.addRow(row1);
+			difference.addRow(finalRow);
 		}	
+	}*/
+
+	///////////////////////////////////////////////////////
+	//                TESTING DIFFERENT CODE             //
+	///////////////////////////////////////////////////////
+	/*************** Proper Output ***********************/
+	vector<string> testrow;
+	for (size_t i = 0; i < tab1[0].getSize(); i++){
+		for (size_t j = 0; j < tab2.size(); j++){
+			if (tab1[j][i] != tab2[j][i])
+				testrow.push_back(tab1[j][i]);
+			else
+				testrow.push_back("");                     //Currently inputs blanks for when values are same
+		}
 	}
+	difference.addRow(testrow);
+
+		
 	return difference;	// returns the union if compatible and and empty table otherwise
 
 }

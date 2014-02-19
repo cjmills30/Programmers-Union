@@ -24,8 +24,13 @@ int main(){
 		colTypes.push_back("int");
 		vector<string> primaryKeys;
 		primaryKeys.push_back("Col1");
+		vector<string> row1;
+		row1.push_back("1");
+		row1.push_back("2");
+		row1.push_back("3");
 		//actual work
 		database.push_back(Table(name,colNames,colTypes,primaryKeys));
+		database[0].addRow(row1);
 
 		string name2 = "test table 2";
 		vector<string> colNames2;
@@ -38,16 +43,40 @@ int main(){
 		colTypes2.push_back("int");
 		vector<string> primaryKeys2;
 		primaryKeys2.push_back("Col12");
+		vector<string> row2;
+		row2.push_back("4");
+		row2.push_back("5");
+		row2.push_back("6");
 		//actual work
 		database.push_back(Table(name2,colNames2,colTypes2,primaryKeys2));
+		database[1].addRow(row2);
+
+		string name3 = "test table 3";
+		vector<string> colNames3;
+		colNames3.push_back("Col1");
+		colNames3.push_back("Col2");
+		colNames3.push_back("Col3");
+		vector<string> colTypes3;
+		colTypes3.push_back("int");
+		colTypes3.push_back("char(40)");
+		colTypes3.push_back("int");
+		vector<string> primaryKeys3;
+		primaryKeys3.push_back("Col3");
+		vector<string> row3;
+		row3.push_back("6");
+		row3.push_back("2");
+		row3.push_back("4");
+		//actual work
+		database.push_back(Table(name3, colNames3, colTypes3, primaryKeys3));
+		database[2].addRow(row3);
 
 		cout<<database.size()<<" tables automatically created\n";
 
-		cout<<"0: Creates another table called test table\n\r";
-		cout<<"1: Will drop or remove test table\n\r";
-		cout<<"2: Will add a new row everytime with random numbers to every table called test table\n\r";
-		cout<<"3: Will display test table\n\r";
-		cout<<"9: exit\n\r";
+		//cout<<"0: Creates another table called test table\n\r";
+		//cout<<"1: Will drop or remove test table\n\r";
+		//cout<<"2: Will add a new row everytime with random numbers to every table called test table\n\r";
+		cout<<"3: Will display current test table\n\r";
+		cout<<"9: testing DIFFERENCE FUNCTION of tab vs. tab 3\n\r";
 	
 	while(1){
 		int rnd1 = rand() %100 + 1;
@@ -55,7 +84,7 @@ int main(){
 
 		printf("Type a number for options\n\r");
 		cin>>type;
-	if(type == 0){
+	/*if(type == 0){
 		//CREATE TABLE tabname (name VARCHAR(20), years INTEGER) PRIMARY KEY (name)
 		string name = "test table"; //table being created
 		vector<string> colNames;
@@ -100,12 +129,15 @@ int main(){
 				}
 			}
 		}
-	} else if(type == 3){
+	}*/
+	if (type == 3){
 		//SHOW tabname
 		string name = "test table";
-		Show(name, database);
+		for (int i = 0; i < database.size(); i++){
+			Show(database[i].getName(), database);
+	}
 		
-	} else if(type == 4) {
+	} /*else if(type == 4) {
 		// UPDATE relation-name SET (column-name = literal) WHERE condition 
 		vector<string> colNames;
 		string name = "test table";
@@ -128,8 +160,12 @@ int main(){
 		//Select(name, condition, tabName);
 
 		
-	} else if(type == 9){ //exit
-		break;
+	}*/ else if(type == 9){ //exit
+		string diffTab = "Difference Table";
+		string tab1, tab2;
+		tab1 = "test table";
+		tab2 = "test table 3";
+		cout << Difference(diffTab, tab1, tab2, database);
 	}
 	
 	}
