@@ -422,6 +422,9 @@ void Show(string name, vector<Table> database){
 	
 }
 
+void writeTable(Table IN_table);
+
+void openTable(Table IN_table);
 
 void parser(string IN_string){
 	if(IN_string.substr(0,6).compare("CREATE") == 0){ // do this
@@ -519,12 +522,28 @@ void parser(string IN_string){
 				return;
 			}
 		}
-		cout << "No such table exists (E522)\n";
+		cout << "No such table exists (E523)\n";
 		return;
 	} else if(IN_string.substr(0,5).compare("WRITE") == 0){ // do this
-		
+		string inTable = IN_string.substr(6,IN_string.rfind(";"));
+		for(int i=0; i<database[i]; ++i){
+			if(database[i].getName().compare(inTable) == 0) {
+				writeTable(database[i]);
+				return;
+			}
+		}
+		cout << "No such table exists (E533)\n";
+		return;
 	} else if(IN_string.substr(0,4).compare("OPEN") == 0){ // do this
-		
+		string inTable = IN_string.substr(5,IN_string.rfind(";"));
+		for(int i=0; i<database[i]; ++i){
+			if(database[i].getName().compare(inTable) == 0) {
+				openTable(database[i]);
+				return;
+			}
+		}
+		cout << "No such table exists (E543)\n";
+		return;
 	} else if(IN_string.substr(0,6).compare("DELETE") == 0){ // do this
 		
 	} else if(IN_string.find("<-") > 0){
