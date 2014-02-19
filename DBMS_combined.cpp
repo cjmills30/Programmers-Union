@@ -1,3 +1,8 @@
+#
+# IMPORTANT: TO COMPILE:
+#	g++ -std=c++11 -static-libstdc++ DBMS_combined.cpp
+#
+
 #include "std_lib_facilities_4.h"
 //#include <vector>
 #include <string>
@@ -422,13 +427,16 @@ void Show(string name, vector<Table> database){
 	
 }
 
-void writeTable(Table IN_table);
+void writeTable(Table IN_table) {}
 
-void openTable(Table IN_table);
+void openTable(Table IN_table) {}
 
-void createRelationTable(string IN_name, string IN_commands);
+void createRelationTable(string IN_name, string IN_commands) {}
+
+void insertFromRelation(string IN_name, string IN_relation) {}
 
 void parser(string IN_string){
+	IN_string += "      ";
 	if(IN_string.substr(0,6).compare("CREATE") == 0){ // do this
 		string name;
 		vector<string> colNames;
@@ -514,46 +522,95 @@ void parser(string IN_string){
 		}
 		cout << primaryKeys << endl;
 		database.push_back(Table(name,colNames,colTypes,primaryKeys));
+		return;
 	} else if(IN_string.substr(0,6).compare("INSERT") == 0){ // do this
-		
+		if(IN_string.find("INTO") == string::npos){
+			cout << "Specify a table to insert values into (E519)\n";
+			return;
+		}
+		size_t locINTO = IN_string.find("INTO")+5;
+		if(IN_string.find(' ',locINTO) == string::npos){
+			cout << "Argument list of bad form. (E524)\n";
+			return;
+		}
+		string targetTable = IN_string.substr(locINTO,IN_string.find(' ',locINTO)-locINTO);
+		bool targetFound = false;
+		int targetLocation = -1;
+		for(int i=0; i<database.size(); ++i){
+			if(database[i].getName().compare(targetTable) == 0){
+				targetLocation = i;
+				targetFound = true;
+				break;
+			}
+		}
+		if(!targetFound) {
+			cout << "Table not found. (E536)\n";
+			return;
+		}
+		if(IN_string.find("VALUES FROM ") == string::npos){
+			cout << "Specify values to insert. (E540)\n";
+			return;
+		}
+		size_t locVALUESFROM = IN_string.find("VALUES FROM ")+12;
+		if(IN_string.substr(locVALUESFROM,8).compare("RELATION") == 0){
+			insertFromRelation(targetTable,IN_string.substr(locVALUESFROM+9,IN_string.rfind(';')-(locVALUESFROM+9)));
+			return;
+		} else {
+			locVALUESFROM++;
+			vector<string> getValues;
+			while(IN_string.find(',',locVALUESFROM) != string::npos){
+				getValues.push_back(IN_string.substr(locVALUESFROM,IN_string.find(',',locVALUESFROM)-locVALUESFROM));
+				locVALUESFROM = IN_string.find(',',locVALUESFROM)+2;
+			}
+			getValues.push_back(IN_string.substr(locVALUESFROM,IN_string.find(')',locVALUESFROM)-locVALUESFROM));
+			if(database[targetLocation].addRow(getValues) == -1){
+				cout << "Column/Data Mismatch (E560)\n";
+				return;
+			}
+			return;
+		}
 	} else if(IN_string.substr(0,4).compare("SHOW") == 0){
 		string inTable = IN_string.substr(5,IN_string.rfind(";"));
-		for(int i=0; i<database[i]; ++i){
+		for(int i=0; i<database.size(); ++i){
 			if(database[i].getName().compare(inTable) == 0) {
-				cout << database[i] << endl;
+				//cout << database[i] << endl;
 				return;
 			}
 		}
-		cout << "No such table exists (E523)\n";
+		cout << "No such table exists (E572)\n";
 		return;
 	} else if(IN_string.substr(0,5).compare("WRITE") == 0){ // do this
 		string inTable = IN_string.substr(6,IN_string.rfind(";"));
-		for(int i=0; i<database[i]; ++i){
+		for(int i=0; i<database.size(); ++i){
 			if(database[i].getName().compare(inTable) == 0) {
 				writeTable(database[i]);
 				return;
 			}
 		}
-		cout << "No such table exists (E533)\n";
+		cout << "No such table exists (E582)\n";
 		return;
 	} else if(IN_string.substr(0,4).compare("OPEN") == 0){ // do this
 		string inTable = IN_string.substr(5,IN_string.rfind(";"));
-		for(int i=0; i<database[i]; ++i){
+		for(int i=0; i<database.size(); ++i){
 			if(database[i].getName().compare(inTable) == 0) {
 				openTable(database[i]);
 				return;
 			}
 		}
-		cout << "No such table exists (E543)\n";
+		cout << "No such table exists (E592)\n";
 		return;
 	} else if(IN_string.substr(0,6).compare("DELETE") == 0){ // do this
 		
 	} else if(IN_string.find("<-") > 1){
-		locArrow = IN_string.find("<-");
+		size_t locArrow = IN_string.find("<-");
 		string tempName = IN_string.substr(0,locArrow-1);
 		string tempCommand = IN_string.substr(locArrow+3,IN_string.length());
 		createRelationTable(tempName,tempCommand);
+	} else {
+		cout << "Invalid command.\n";
+		return;
 	}
+	cout << "Invalid command.\n";
 }
 
 
