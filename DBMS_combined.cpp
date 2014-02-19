@@ -512,7 +512,15 @@ void parser(string IN_string){
 	} else if(IN_string.substr(0,6).compare("INSERT") == 0){ // do this
 		
 	} else if(IN_string.substr(0,4).compare("SHOW") == 0){
-		
+		string inTable = IN_string.substr(5,IN_string.rfind(";"));
+		for(int i=0; i<database[i]; ++i){
+			if(database[i].getName().compare(inTable) == 0) {
+				cout << database[i] << endl;
+				return;
+			}
+		}
+		cout << "No such table exists (E522)\n";
+		return;
 	} else if(IN_string.substr(0,5).compare("WRITE") == 0){ // do this
 		
 	} else if(IN_string.substr(0,4).compare("OPEN") == 0){ // do this
