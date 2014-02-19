@@ -426,6 +426,8 @@ void writeTable(Table IN_table);
 
 void openTable(Table IN_table);
 
+void createRelationTable(string IN_name, string IN_commands);
+
 void parser(string IN_string){
 	if(IN_string.substr(0,6).compare("CREATE") == 0){ // do this
 		string name;
@@ -546,8 +548,11 @@ void parser(string IN_string){
 		return;
 	} else if(IN_string.substr(0,6).compare("DELETE") == 0){ // do this
 		
-	} else if(IN_string.find("<-") > 0){
-		
+	} else if(IN_string.find("<-") > 1){
+		locArrow = IN_string.find("<-");
+		string tempName = IN_string.substr(0,locArrow-1);
+		string tempCommand = IN_string.substr(locArrow+3,IN_string.length());
+		createRelationTable(tempName,tempCommand);
 	}
 }
 
