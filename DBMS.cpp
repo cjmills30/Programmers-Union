@@ -207,11 +207,7 @@ Table Product (string newName, string tabName1, string tabName2, vector<Table> d
 				}
 			}
 		}
-<<<<<<< HEAD
-
 		product = Table(newName, colNames, newColumns, primaryKeys);
-=======
->>>>>>> 26f4afc7647ee6ffe80952f354da8798726e9b74
 		product.addRow(newRow);
 	}
 	return product; // returns product
