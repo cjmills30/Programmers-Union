@@ -61,6 +61,7 @@ public:
 			}
 		}
 	}
+	
 private:
 	string name;
 	string type;
@@ -155,32 +156,30 @@ public:
 	vector<Column> getColumns() {
 		return columns;
 	}
-	/*
-	int Update(vector<string> IN_columnNames, vector<string> values, vector<int> rows_to_update) {
+	
+	/* int Update(vector<string> IN_columnNames, vector<string> values, vector<int> rows_to_update) {
 
 	for(size_t k = 0; k<IN_columnNames.size(); ++k) {	// goes through the list of columns to update
-	for(size_t i = 0; i<columns.size(); ++i) {  // goes through the columns of table
-	if(columns[i].getName() == IN_columnNames[k]) {  // find the column needed to update
-	for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the
-	if(columns[i][j] == condition_val) {	// find the rows with the condition value
-	rows_to_update.push_back(j);		// add the row index to rows_to_update
-	}
-	}
-	}
-	}
-	//now we know which rows to update
-	for(size_t i = 0; i<columns.getSize(); ++i) {  // goes through the columns of table
-	//if(columns[i].getName() == IN_columnNames
-	}
-	}
-	*/
+		for(size_t i = 0; i<columns.size(); ++i) {  // goes through the columns of table
+			if(columns[i].getName() == IN_columnNames[k]) {  // find the column needed to update
+				for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the
+					if(columns[i][j] == condition_val) {	// find the rows with the condition value
+					rows_to_update.push_back(j);		// add the row index to rows_to_update
+					}
+				}
+			}
+		}
+		//now we know which rows to update
+		for(size_t i = 0; i<columns.getSize(); ++i) {  // goes through the columns of table
+			//if(columns[i].getName() == IN_columnNames
+		}
+	}*/
 	
 private:
 	string name;
 	vector<Column> columns;
 	vector<string> primaryKeys;
 };
-
 
 vector<Table> database;
 
@@ -210,9 +209,7 @@ Table Project(string newName, vector<string> columnNames, string tabName, vector
 				subset = database[i].getColumns(columnNames);
 			}
 	}
-	
 	return Table(newName, subset, primaryKeys);
-
 }
 
 // Renaming (renames the columns)
@@ -241,7 +238,6 @@ Table Union(string newName, string tabName1, string tabName2, vector<Table> data
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:union");
 	
-	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
 				tab1 = database[i].getColumns();
@@ -260,6 +256,7 @@ Table Union(string newName, string tabName1, string tabName2, vector<Table> data
 			}
 		}
 	}
+	
 	Table onion;			
 	// execute the union of tab1 and tab2 (duplicates are allowed)
 	if(compatible) {
@@ -283,7 +280,6 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 	vector<string> columnTypes;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -348,15 +344,13 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 		for (size_t j = 0; j < tab2.size(); j++){
 			if (tab1[j][i] != tab2[j][i])
 				testrow.push_back(tab1[j][i]);
-			else
+			} else {
 				testrow.push_back("");                     //Currently inputs blanks for when values are same
+			}
 		}
 	}
 	difference.addRow(testrow);
-
-		
 	return difference;	// returns the union if compatible and and empty table otherwise
-
 }
 
 //Product
@@ -387,13 +381,9 @@ Table Product (string newName, string tabName1, string tabName2, vector<Table> d
 				}
 			}
 		}
-
 		product.addRow(newRow);
-
 	}
-
 	return product; // returns product
-	
 }
 
 //Join
@@ -404,7 +394,6 @@ Table Join(string newName, string tabName1, string tabName2, vector<Table> datab
 	vector<string> columnTypes;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -438,7 +427,6 @@ Table Join(string newName, string tabName1, string tabName2, vector<Table> datab
 		}	
 	}
 	return join;	// returns the union if compatible and and empty table otherwise
-
 }
 
 void Show(string name, vector<Table> database){
@@ -447,7 +435,6 @@ void Show(string name, vector<Table> database){
 			cout << database[i];
 		}
 	}
-	
 }
 
 void writeTable(Table IN_table) {}
@@ -548,6 +535,7 @@ void parser(string IN_string){
 		//cout << primaryKeys << endl;
 		database.push_back(Table(name,colNames,colTypes,primaryKeys));
 		return;
+		
 	} else if(IN_string.substr(0,6).compare("INSERT") == 0){ // do this
 		if(IN_string.find("INTO") == string::npos){
 			cout << "Specify a table to insert values into (E527)\n";
