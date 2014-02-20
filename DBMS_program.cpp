@@ -76,8 +76,16 @@ int main(){
 		//cout<<"1: Will drop or remove test table\n\r";
 		//cout<<"2: Will add a new row everytime with random numbers to every table called test table\n\r";
 		cout<<"3: Will display current test table\n\r";
+		cout<<"4: testing PRODUCT FUNCTION of tab 2 vs. tab 3\n\r";
 		cout<<"9: testing DIFFERENCE FUNCTION of tab vs. tab 3\n\r";
-	
+		
+		cout<<database[0].getColumns()[0].getSize()<<"\n\r";
+		cout<<database[0].getColumns().size()<<"\n\r";
+		cout<<database[0].getColumns()[2][0]<<"\n\r";
+		cout<<database[2].getColumns()[0][0]<<"\n\r";
+		
+
+
 	while(1){
 		int rnd1 = rand() %100 + 1;
 		int rnd2 = rand() %100 + 1;
@@ -160,7 +168,14 @@ int main(){
 		//Select(name, condition, tabName);
 
 		
-	}*/ else if(type == 9){ //exit
+	}*/ else if (type == 4) {
+		string prodTab = "Product Table";
+		string tab1, tab2;
+		tab1 = "test table";
+		tab2 = "test table 2";
+		cout << Product(prodTab, tab1, tab2, database);
+
+		} else if(type == 9){ //exit
 		string diffTab = "Difference Table";
 		string tab1, tab2;
 		tab1 = "test table";

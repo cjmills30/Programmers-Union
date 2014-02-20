@@ -194,19 +194,28 @@ Table Product (string newName, string tabName1, string tabName2, vector<Table> d
 			}		
 	}
 
-	Table product = Table(newName, columnNames, columnTypes, primaryKeys);
+	Table product;
 
 	for(size_t i = 0; i<tab1[0].getSize(); i++) { //iterate down first column of table 1
 		vector<string> newRow;
-		for(size_t j = 0; i<tab1.size(); j++){    //iterate across row
+		vector<string> newColumns;
+		vector<string> colNames;
+		for(size_t j = 0; j<tab1.size(); j++){    //iterate across row using number of columns 3 col = 3 rows
 			for(size_t k = 0; k < tab2[0].getSize(); k++) { // iterate down first column of table 2
-				for(size_t ii = 0; k<tab2.size(); ii++){ // iterate through rows of column
-					newRow.push_back(tab1[j][i]);        //push value of current row of tab1 with every row of current tab2.
-					newRow.push_back(tab2[ii][k]);
+				for(size_t ii = 0; ii<tab2.size(); ii++){ // iterate through rows of column
+					newColumns.push_back("type T");       /***pushes back a new column for every row**/
+					colNames.push_back("name");           /***in order for addRow function to work***/
+					newRow.push_back(tab1[j][0]);        //push value of current row of tab1 with every row of current tab2.
+					cout << tab1[j][0] << "\n\r";
+					newColumns.push_back("type T");     /******************************************/
+					colNames.push_back("name");         //      set second brackets to 0 so       //
+					newRow.push_back(tab2[ii][0]);      //      that doesn't go outside of range  //
+					cout << tab2[ii][0]<< "\n\r";       /******************************************/
 				}
 			}
 		}
 
+		product = Table(newName, colNames, newColumns, primaryKeys);
 		product.addRow(newRow);
 
 	}
