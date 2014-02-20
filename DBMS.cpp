@@ -29,9 +29,7 @@ Table Project(string newName, vector<string> columnNames, string tabName, vector
 				subset = database[i].getColumns(columnNames);
 			}
 	}
-	
 	return Table(newName, subset, primaryKeys);
-
 }
 
 // Renaming (renames the columns)
@@ -59,7 +57,6 @@ Table Union(string newName, string tabName1, string tabName2, vector<Table> data
 	bool compatible = true;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:union");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -102,7 +99,6 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 	vector<string> columnTypes;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -149,7 +145,6 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 				//cout << row2[j];
 			}
 			if(row1==row2) {		// compare row1 with row2
-				
 				finalRow.push_back("");		// if row1 equals row2, row1 will not be in the difference table
 			}
 		}
@@ -165,17 +160,15 @@ Table Difference(string newName, string tabName1, string tabName2, vector<Table>
 	vector<string> testrow;
 	for (size_t i = 0; i < tab1[0].getSize(); i++){
 		for (size_t j = 0; j < tab2.size(); j++){
-			if (tab1[j][i] != tab2[j][i])
+			if (tab1[j][i] != tab2[j][i]){
 				testrow.push_back(tab1[j][i]);
-			else
+			} else {
 				testrow.push_back("");                     //Currently inputs blanks for when values are same
+			}
 		}
 	}
 	difference.addRow(testrow);
-
-		
 	return difference;	// returns the union if compatible and and empty table otherwise
-
 }
 
 //Product
@@ -206,13 +199,9 @@ Table Product (string newName, string tabName1, string tabName2, vector<Table> d
 				}
 			}
 		}
-
 		product.addRow(newRow);
-
 	}
-
 	return product; // returns product
-	
 }
 
 //Join
@@ -223,7 +212,6 @@ Table Join(string newName, string tabName1, string tabName2, vector<Table> datab
 	vector<string> columnTypes;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:difference");
-	
 	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName1) == 0){
@@ -257,7 +245,6 @@ Table Join(string newName, string tabName1, string tabName2, vector<Table> datab
 		}	
 	}
 	return join;	// returns the union if compatible and and empty table otherwise
-
 }
 
 void Show(string name, vector<Table> database)
@@ -267,5 +254,4 @@ void Show(string name, vector<Table> database)
 			cout << database[i];
 		}
 	}
-	
 }
