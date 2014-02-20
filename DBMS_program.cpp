@@ -76,7 +76,9 @@ int main(){
 		//cout<<"1: Will drop or remove test table\n\r";
 		//cout<<"2: Will add a new row everytime with random numbers to every table called test table\n\r";
 		cout<<"3: Will display current test table\n\r";
-		cout<<"4: testing PRODUCT FUNCTION of tab 2 vs. tab 3\n\r";
+		cout<<"4: testing PRODUCT FUNCTION of tab 1 vs. tab 2\n\r";
+		cout<<"5: testing JOIN FUNCTION of tab 2 vs. tab 3\n\r";
+		cout<<"6: test UNION FUNCTION of tab 2 vs. tab 3\n\r";
 		cout<<"9: testing DIFFERENCE FUNCTION of tab vs. tab 3\n\r";
 		
 		cout<<database[0].getColumns()[0].getSize()<<"\n\r";
@@ -174,6 +176,20 @@ int main(){
 		tab1 = "test table";
 		tab2 = "test table 2";
 		cout << Product(prodTab, tab1, tab2, database);
+
+		} else if (type == 5) {
+		string prodTab = "Join Table";
+		string tab1, tab2;
+		tab1 = "test table 2";
+		tab2 = "test table 3";
+		cout << Join(prodTab, tab1, tab2, database);
+
+		} else if (type == 6) {
+		string prodTab = "Union Table";
+		string tab1, tab2;
+		tab1 = "test table 2";
+		tab2 = "test table 3";
+		cout << Union(prodTab, tab1, tab2, database);
 
 		} else if(type == 9){ //exit
 		string diffTab = "Difference Table";
