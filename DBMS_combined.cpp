@@ -23,6 +23,9 @@ ostream& operator<< (ostream& out, vector<T> in_vector){
 	return out;
 }
 
+struct Node;
+vector<bool> EvaluateCondition(Node* cond);
+
 class Column{
 public:
 	Column(string IN_name, string IN_type){
@@ -58,6 +61,7 @@ public:
 			if ((*itt) == data[i])
 			{
 				data.erase(itt);
+				break;
 			}
 		}
 	}
@@ -118,6 +122,14 @@ public:
 		returnOutput += IN_table.getName();
 		returnOutput += "\n";
 
+		//output the column names
+		for (size_t i = 0; i<IN_table.columns.size(); ++i){	
+			returnOutput += IN_table.columns[i].getName();
+			returnOutput += "\t";
+		}
+		returnOutput += "\n";
+		
+		// output the table values
 		for (size_t i = 0; i<IN_table.columns[0].getSize(); ++i){
 			for (size_t j = 0; j<IN_table.columns.size(); ++j){
 				returnOutput += IN_table.columns[j][i];
@@ -128,15 +140,20 @@ public:
 		return out << returnOutput;
 	}
 	//delete function
-	void deleteFrom(string comparison){
+	void deleteFrom(Node* cond){
+		vector<bool> conditionMet = EvaluateCondition(cond);
+		
+		int deletedRows = 0;
 		for (size_t i = 0; i<columns[0].getSize(); ++i)  // goes through first column of table
 		{
-			if (columns[0][i] == comparison)  // finds index of the data that matches comparison
+			if (conditionMet.at(i+deletedRows))  // checks to see if the row matches the condition
 			{
 				for (size_t j = 0; j<columns.size(); j++)  // goes through columns of table
 				{
 					columns[j].deleteCell(i);  // deletes ith cell in each column
 				}
+				--i; // have to decrement row iterator because of the change in size
+				deletedRows++;
 			}
 		}
 	}
@@ -157,23 +174,25 @@ public:
 		return columns;
 	}
 	
-	/* int Update(vector<string> IN_columnNames, vector<string> values, vector<int> rows_to_update) {
-
-	for(size_t k = 0; k<IN_columnNames.size(); ++k) {	// goes through the list of columns to update
-		for(size_t i = 0; i<columns.size(); ++i) {  // goes through the columns of table
-			if(columns[i].getName() == IN_columnNames[k]) {  // find the column needed to update
-				for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the
-					if(columns[i][j] == condition_val) {	// find the rows with the condition value
-					rows_to_update.push_back(j);		// add the row index to rows_to_update
+	int Update(vector<string> IN_columnNames, vector<string> IN_values, Node* cond) {
+		vector<bool> conditionalRows = EvaluateCondition(cond);
+		
+		for(size_t i = 0; i<columns.size(); i++) {  // goes through the columns of table
+			
+			for(size_t k = 0; k<IN_columnNames.size(); k++) {	// goes through the list of columns names to update
+				
+				if(columns[i].getName() == IN_columnNames[k]) {  // find the column of table to update
+					
+					for(size_t j = 0; j<columns[i].getSize(); j++) { // goes through rows of the column
+						
+						if(conditionalRows.at(j)) {	// change the value at rows where condition is met
+							columns[i][j] = IN_values[k];
+						}
 					}
 				}
 			}
 		}
-		//now we know which rows to update
-		for(size_t i = 0; i<columns.getSize(); ++i) {  // goes through the columns of table
-			//if(columns[i].getName() == IN_columnNames
-		}
-	}*/
+	}
 	
 private:
 	string name;
@@ -181,19 +200,53 @@ private:
 	vector<string> primaryKeys;
 };
 
+enum Conditions {conjunction, op, column_name, literal, special};
+
+struct Node {
+	Node() : parent(NULL), left(NULL), right(NULL), tab(NULL) { }
+	Node* parent;
+	Node* left;
+	Node* right;
+	Table* tab;
+	vector<string> value;	
+	Conditions type;
+};
+
 vector<Table> database;
 
-Table Select(string newName, string condition, string tabName, vector<Table> database) {
-
-	Table selection;
+// Select WORKING
+Table Select(string newName, Node* condition, string tabName, vector<Table> database) {
+	vector<bool> sel = EvaluateCondition(condition);
+	for(int i=0; i< sel.size(); i++) {
+		cout << sel.at(i) << endl; 
+	}
+	vector<Column> selectionCols;
+	vector<string> primaryKeys;
+	primaryKeys.push_back("key:select");
+	
 	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
 			if(database[i].getName().compare(tabName) == 0){
-				selection = database[i];
+				selectionCols = database[i].getColumns();
 			}
 	}
+	
+	for(size_t i = 0; i < selectionCols.size(); i++) {	// traverse across the columns
+		int erased = 0;
+		for(size_t j = 0; j < selectionCols[i].getSize(); j++) { // traverse down each column i
+			if(sel.at(j+erased)) {	// this row is selected
+				// leave the row
+			} else {
+				// remove the row from the col
+				selectionCols[i].deleteCell(j);
+				erased++;
+				--j;	// adjust the iterator because the column size is changed
+			}
+		}	
+	}
+	
 	// delete from selection rows that do not meet the condition
-	selection.deleteFrom(condition);
-	selection.setName(newName);
+	//selection.deleteFrom(condition);
+	Table selection = Table(newName, selectionCols, primaryKeys);
 	return selection;
 }
 
@@ -537,6 +590,131 @@ void Show(string name, vector<Table> database){
 			cout << database[i];
 		}
 	}
+}
+
+vector<bool> EvaluateCondition(Node* cond) {	
+	vector<bool> eval;
+	vector<bool> left_bool;
+	vector<bool> right_bool;
+		
+	if(cond->left !=NULL) {
+		left_bool = EvaluateCondition(cond->left);	
+	}	
+	if(cond->right !=NULL) {
+		right_bool = EvaluateCondition(cond->right);	
+	}	
+	
+	// initialize data structures outside of the switch case
+	vector<Column> tempcol;
+	vector<string> left_list;
+	vector<string> right_list;
+	
+	switch(cond->type) {				
+		case 0:
+			//conjunction
+			
+			// adjust the boolean list sizes if needed
+			if(left_bool.size() == right_bool.size()) {	
+				// do nothing
+			} else if(left_bool.size() > right_bool.size() && right_bool.size() == 1) { // list op val
+				bool temp = false;//right_bool[0];
+				right_bool.clear();	
+				for(int i=0; i<left_bool.size(); i++) {
+					right_bool.push_back(temp);
+				}
+			} else if(left_bool.size() < right_bool.size() && left_bool.size() == 1) { // val op list
+				bool temp = false; //left_bool[0];
+				left_bool.clear();	
+				for(int i=0; i<right_bool.size(); i++) {
+					left_bool.push_back(temp);
+				}				
+			}
+			
+			// perform the comparison of the lists now
+			if(cond->value[0] == "&&") {
+				for(int i=0; i < left_bool.size(); i++) {
+					// vector<bool> has special accessing method
+					eval.push_back(left_bool.at(i) && right_bool.at(i));	
+				}
+			} else if(cond->value[0] == "||") {
+				for(int i=0; i < left_bool.size(); i++) {
+					eval.push_back(left_bool.at(i) || right_bool.at(i));
+				}
+			}
+			break;				
+		case 1:		// op
+		
+			// 4 possibilities for comparisons		list op list, list op val, val op list, val op val 
+						
+			// make sure the two lists to compare are the same size
+			if(cond->left->value.size() == cond->right->value.size()) {	
+				// list op list  or  val op val
+				left_list = cond->left->value;
+				right_list = cond->right->value;
+			} else if(cond->left->value.size() > cond->right->value.size() && cond->right->value.size() == 1) { // list op val
+				left_list = cond->left->value;			
+				for(int i=0; i<left_list.size(); i++) {
+					right_list.push_back(cond->right->value[0]);
+				}
+			} else if(cond->left->value.size() < cond->right->value.size() && cond->left->value.size() == 1) { // val op list
+				right_list = cond->right->value;			
+				for(int i=0; i<right_list.size(); i++) {
+					left_list.push_back(cond->left->value[0]);
+				}				
+			}
+			
+			// now do the comparisons
+			for(int i=0; i < left_list.size(); i++) {
+				if(cond->value[0] == "==") {
+					eval.push_back(left_list[i] == right_list[i]);
+									
+				} else if(cond->value[0] == "!=") {
+					eval.push_back(left_list[i] != right_list[i]);
+					
+				} else if(cond->value[0] == "<") {
+					eval.push_back(left_list[i] < right_list[i]);
+					
+				} else if(cond->value[0] == ">") {
+					eval.push_back(left_list[i] > right_list[i]);
+					
+				} else if(cond->value[0] == "<=") {
+					eval.push_back(left_list[i] <= right_list[i]);
+					
+				} else if(cond->value[0] == ">=") {
+					eval.push_back(left_list[i] >= right_list[i]);
+					
+				} else {
+					// operand does not exist
+					eval.push_back(false);
+				}
+			}	
+			break;					
+		case 2:	
+			// attribute-name
+			//get val from table where column name = condition value
+			
+			tempcol = cond->tab->getColumns(cond->value);//(cond->tab)->getColumns(cond->value);					
+			cond->value.clear();
+			for(size_t i = 0; i < tempcol.size(); i++) {
+				for(size_t j = 0; j < tempcol[i].getSize(); j++) {
+					string s = tempcol[i][j];
+					cond->value.push_back(s);
+				}
+			}
+			break;					
+		case 3: 	
+			//literal
+			// nothing to be done
+			//eval.push_back(true);
+			break;					
+		case 4: 
+			//special
+			break;					
+		default: 
+			// type error
+			break;					
+	}		
+	return eval;
 }
 
 void writeTable(Table IN_table) {}
