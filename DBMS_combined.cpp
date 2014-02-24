@@ -862,11 +862,13 @@ void parser(string IN_string){
 			}
 			return;
 		}
-	} else if(IN_string.substr(0,4).compare("SHOW") == 0){
-		string inTable = IN_string.substr(5,IN_string.rfind(";"));
+	} else if(IN_string.substr(0,4).compare("SHOW") == 0){ //Now outputs table
+		string inTable = IN_string.substr(5,IN_string.size() - 12);
+		cout << "\n******************************\n\r";
 		for(int i=0; i<database.size(); ++i){
 			if(database[i].getName().compare(inTable) == 0) {
-				//cout << database[i] << endl;
+				Show(database[i].getName(), database);
+				cout << "******************************\n\n\r";
 				return;
 			}
 		}
@@ -925,11 +927,32 @@ void parser(string IN_string){
 		deleteData(targetTable, getCondition);
 		return;
 		
-	} else if(IN_string.find("<-") > 1){
+	} else if(IN_string.find("<-") > 1){ //Currently makes Union with '+' sign!
+		int operPos = 0;
 		size_t locArrow = IN_string.find("<-");
+		string wholeStr = IN_string.substr(0);
+
+		for(char& c : wholeStr) {
+			if(c != '+')
+				operPos++;                        //Currently makes just plus sign work
+			else
+				break;
+		}
+
 		string tempName = IN_string.substr(0,locArrow-1);
-		string tempCommand = IN_string.substr(locArrow+3,IN_string.length());
-		createRelationTable(tempName,tempCommand);
+		cout << tempName << "X\n\r";
+		string tempCommand = IN_string.substr(locArrow+3,operPos - locArrow-4);
+		cout << tempCommand << "X\n\r";
+		string operand = IN_string.substr(operPos, 2);
+		cout << operand << "\n\r";
+		string tempCommand2 = IN_string.substr(operPos+2 , IN_string.length()-operPos-8);
+		cout << tempCommand2 << "X\n\r";
+		if(operand == "+ ") { //Needs more checks for other operands
+			cout << "\n*********************\n\r";
+			cout << Union(tempName, tempCommand, tempCommand2, database);
+			cout << "\n*********************\n\r";
+		}
+		//createRelationTable(tempName,tempCommand);
 	} else {
 		cout << "Invalid command. (E640)\n";
 		return;
@@ -940,6 +963,65 @@ void parser(string IN_string){
 
 int main(){
 	printf("WELCOME TO THE DBMS!\n");
+	/*******TABLES FOR TESTING*******/
+	string name = "table1";
+		vector<string> colNames;
+		colNames.push_back("Col1");
+		colNames.push_back("Col2");
+		colNames.push_back("Col3");
+		vector<string> colTypes;
+		colTypes.push_back("int");
+		colTypes.push_back("char(40)");
+		colTypes.push_back("int");
+		vector<string> primaryKeys;
+		primaryKeys.push_back("Col1");
+		vector<string> row1;
+		row1.push_back("1");
+		row1.push_back("2");
+		row1.push_back("3");
+		//actual work
+		database.push_back(Table(name,colNames,colTypes,primaryKeys));
+		database[0].addRow(row1);
+
+		string name2 = "table2";
+		vector<string> colNames2;
+		colNames2.push_back("Col12");
+		colNames2.push_back("Col22");
+		colNames2.push_back("Col32");
+		vector<string> colTypes2;
+		colTypes2.push_back("int");
+		colTypes2.push_back("char(40)");
+		colTypes2.push_back("int");
+		vector<string> primaryKeys2;
+		primaryKeys2.push_back("Col12");
+		vector<string> row2;
+		row2.push_back("4");
+		row2.push_back("5");
+		row2.push_back("6");
+		//actual work
+		database.push_back(Table(name2,colNames2,colTypes2,primaryKeys2));
+		database[1].addRow(row2);
+
+		string name3 = "table3";
+		vector<string> colNames3;
+		colNames3.push_back("Col1");
+		colNames3.push_back("Col2");
+		colNames3.push_back("Col3");
+		vector<string> colTypes3;
+		colTypes3.push_back("int");
+		colTypes3.push_back("char(40)");
+		colTypes3.push_back("int");
+		vector<string> primaryKeys3;
+		primaryKeys3.push_back("Col3");
+		vector<string> row3;
+		row3.push_back("6");
+		row3.push_back("2");
+		row3.push_back("4");
+		//actual work
+		database.push_back(Table(name3, colNames3, colTypes3, primaryKeys3));
+		database[2].addRow(row3);
+
+		cout<<database.size()<<" Tables created for testing\n";
 	for(;;){
 		printf(">");
 		string commandIN;
