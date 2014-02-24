@@ -331,7 +331,7 @@ Table Union(string newName, string tabName1, string tabName2, vector<Table> data
 	for(size_t i = 0; i<tab1[0].getSize(); i++) { //iterate down first column of table 1
 		vector<string> newRow;
 		vector<string> tmp1;  //IMPORTANT!!! tmp1, tmp2, and tmp3 created
-		  vector<string> tmp2;//so that row vector doesn't get pushed into, requiring more columns
+		vector<string> tmp2;  //so that row vector doesn't get pushed into, requiring more columns
 		vector<string> newColumns;
 		vector<string> colNames;
 		for(size_t j = 0; j<tab1.size(); j++){    //iterate across row using number of columns 3 col = 3 rows
@@ -342,15 +342,15 @@ Table Union(string newName, string tabName1, string tabName2, vector<Table> data
 							newRow.push_back(tab1[j][0]);
 							onion.addRow(newRow);
 						}
-						else //Adds both table values since both don't have same value
-							
-						  
+						else{ //Adds both table values since both don't have same value
+						
 							newRow.push_back(tab1[j][0]);
 							tmp1.push_back(tab1[j][0]);
 							onion.addRow(tmp1);
 							tmp2.push_back(tab2[ii][0]);
 							newRow.push_back(tab2[ii][0]);
-							onion.addRow(tmp2);
+							onion.addRow(tmp2); 
+						}
 					}	
 					else if(newRow.size() != 0) {          //If values in vector then can check for copies
 							int t1flag = 0;
