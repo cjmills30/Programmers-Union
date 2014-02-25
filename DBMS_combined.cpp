@@ -22,9 +22,31 @@ ostream& operator<< (ostream& out, vector<T> in_vector){
 	out << "}";
 	return out;
 }
-
+//-------GLOBAL DATA STRUCTURES AND VARIABLES-----------
+class Table;
+class Column;
 struct Node;
+vector<Table> database;
+enum Conditions {conjunction, op, operand};
+Node* tree;
+
+//-------FUNCTIONS-------------------------
+string trim(string IN_string);
+Node* parseCondition(string &condition);
 vector<bool> EvaluateCondition(Node* cond);
+void parser(string IN_string);
+void release_tree() { free(tree); }	
+
+
+struct Node {
+	Node() : parent(NULL), left(NULL), right(NULL), tab(NULL) { }
+	Node* parent;
+	Node* left;
+	Node* right;
+	Table* tab;
+	vector<string> value;	
+	Conditions type;
+};
 
 class Column{
 public:
@@ -141,6 +163,7 @@ public:
 	}
 	//delete function
 	void deleteFrom(Node* cond){
+		cond->tab = this;
 		vector<bool> conditionMet = EvaluateCondition(cond);
 		
 		int deletedRows = 0;
@@ -175,6 +198,7 @@ public:
 	}
 	
 	int Update(vector<string> IN_columnNames, vector<string> IN_values, Node* cond) {
+		cond->tab = this;
 		vector<bool> conditionalRows = EvaluateCondition(cond);
 		
 		for(size_t i = 0; i<columns.size(); i++) {  // goes through the columns of table
@@ -200,36 +224,18 @@ private:
 	vector<string> primaryKeys;
 };
 
-enum Conditions {conjunction, op, column_name, literal, special};
-
-struct Node {
-	Node() : parent(NULL), left(NULL), right(NULL), tab(NULL) { }
-	Node* parent;
-	Node* left;
-	Node* right;
-	Table* tab;
-	vector<string> value;	
-	Conditions type;
-};
-
-vector<Table> database;
-
-// Select WORKING
-Table Select(string newName, Node* condition, string tabName, vector<Table> database) {
+// Select 
+Table Select(string newName, Node* condition,  Table selectfrom) {
+	condition->tab = &selectfrom;
 	vector<bool> sel = EvaluateCondition(condition);
-	for(int i=0; i< sel.size(); i++) {
-		cout << sel.at(i) << endl; 
-	}
+	
 	vector<Column> selectionCols;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:select");
 	
-	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName) == 0){
-				selectionCols = database[i].getColumns();
-			}
-	}
-	
+	// get the columns from the table
+	selectionCols = selectfrom.getColumns();
+			
 	for(size_t i = 0; i < selectionCols.size(); i++) {	// traverse across the columns
 		int erased = 0;
 		for(size_t j = 0; j < selectionCols[i].getSize(); j++) { // traverse down each column i
@@ -251,31 +257,25 @@ Table Select(string newName, Node* condition, string tabName, vector<Table> data
 }
 
 // Projection
-Table Project(string newName, vector<string> columnNames, string tabName, vector<Table> database) {
+Table Project(string newName, vector<string> columnNames, Table projectfrom) {
 	
 	vector<Column> subset;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:projection");
 	
-	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName) == 0){
-				subset = database[i].getColumns(columnNames);
-			}
-	}
+	subset = projectfrom.getColumns(columnNames);
+	
 	return Table(newName, subset, primaryKeys);
 }
 
 // Renaming (renames the columns)
-Table Rename(string newName, vector<string> columnNames, string tabName, vector<Table> database) {
+Table Rename(string newName, vector<string> columnNames, Table renamefrom) {
 	vector<Column> subset;
 	vector<string> primaryKeys;
 	primaryKeys.push_back("key:rename");
 	
-	for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
-			if(database[i].getName().compare(tabName) == 0){
-				subset = database[i].getColumns(columnNames);
-			}
-	}
+	subset = renamefrom.getColumns(columnNames);
+	
 	if(columnNames.size() == subset.size()) {	// make sure the column counts are matching
 		for(size_t i = 0; i<subset.size(); i++){ 
 			subset[i].setName(columnNames[i]);	// change the column names
@@ -598,9 +598,11 @@ vector<bool> EvaluateCondition(Node* cond) {
 	vector<bool> right_bool;
 		
 	if(cond->left !=NULL) {
+		cond->left->tab = cond->tab;
 		left_bool = EvaluateCondition(cond->left);	
 	}	
 	if(cond->right !=NULL) {
+		cond->right->tab = cond->tab;
 		right_bool = EvaluateCondition(cond->right);	
 	}	
 	
@@ -610,8 +612,7 @@ vector<bool> EvaluateCondition(Node* cond) {
 	vector<string> right_list;
 	
 	switch(cond->type) {				
-		case 0:
-			//conjunction
+		case 0:	//conjunction
 			
 			// adjust the boolean list sizes if needed
 			if(left_bool.size() == right_bool.size()) {	
@@ -689,29 +690,26 @@ vector<bool> EvaluateCondition(Node* cond) {
 				}
 			}	
 			break;					
-		case 2:	
-			// attribute-name
-			//get val from table where column name = condition value
-			
+		case 2:	// operand			
+			// check for attribute-name
+			//get val from table where column name = attribute-name
+					
 			tempcol = cond->tab->getColumns(cond->value);//(cond->tab)->getColumns(cond->value);					
-			cond->value.clear();
-			for(size_t i = 0; i < tempcol.size(); i++) {
-				for(size_t j = 0; j < tempcol[i].getSize(); j++) {
-					string s = tempcol[i][j];
-					cond->value.push_back(s);
+			
+			if(tempcol.size() != 0) {	// value is an attribute-name
+				cond->value.clear();
+				for(size_t i = 0; i < tempcol.size(); i++) {
+					for(size_t j = 0; j < tempcol[i].getSize(); j++) {
+						string s = tempcol[i][j];
+						cond->value.push_back(s);
+					}
 				}
+			} else { // value is a literal
+				// do nothing because value is what it should be already
 			}
 			break;					
-		case 3: 	
-			//literal
-			// nothing to be done
-			//eval.push_back(true);
-			break;					
-		case 4: 
-			//special
-			break;					
 		default: 
-			// type error
+			// no condition
 			break;					
 	}		
 	return eval;
@@ -721,8 +719,234 @@ void writeTable(Table IN_table) {}
 
 void openTable(Table IN_table) {}
 
-void createRelationTable(string IN_name, string IN_commands) {}
+// creates a relation from a query 
+Table createRelation(string IN_name, string IN_commands) {
+	Table returnTable;
+	IN_commands = trim(IN_commands);
+	cout << "cR = \"" << IN_commands << "\"" <<endl;
+	
+	// check for parenthesis---------------------------------
+	if(IN_commands.substr(0,1).compare("(") == 0) {
+		// put in a stack?
+		// take it out of commands string
+		IN_commands = IN_commands.substr(1,string::npos);
+	}
+	
+	//	check for relational operators---------------------
+	if(IN_commands.substr(0,6).compare("select") == 0){
+				//new table <- select (Col1 == 1) test table
+		// isolate condition string	ex.(lval == rval)
+		string condition = IN_commands.substr(7,string::npos);
+		
+		Node* con_tree = parseCondition(condition);	
+		IN_commands = condition;	// condition is passed by reference to parseCondition and edited their
+		
+		Table selectfrom = createRelation(IN_name, IN_commands);
+		Table returnTable = Select(IN_name, con_tree, selectfrom);
+						
+	} else if(IN_commands.substr(0,7).compare("project") == 0){
+		// new table <- project (Col1, Col2) test table
+		string attributes;
+		vector<string> attribute_list;
+		
+		size_t index = IN_commands.find_first_of("(");
+		attributes = IN_commands.substr(index+1,string::npos);
+		
+		index = IN_commands.find_first_of(")");
+		IN_commands = IN_commands.substr(index+1,string::npos);
+				
+		int i=0;
+		while(i < attributes.find(")")) {
+			string name = attributes.substr(i,attributes.find_first_of(",)", i)-i); 
+			i += name.length()+1;
+			name = trim(name);			
+			attribute_list.push_back(name);			
+		}
+		
+		Table projectfrom = createRelation(IN_name, IN_commands);
+		Table returnTable = Project(IN_name, attribute_list, projectfrom);
+				
+	} else if(IN_commands.substr(0,6).compare("rename") == 0){
+		// new table <- rename (co1, co2, co3) test table
+		string attributes;
+		vector<string> attribute_list;
+		
+		size_t index = IN_commands.find_first_of("(");
+		attributes = IN_commands.substr(index+1,string::npos);
+		
+		index = IN_commands.find_first_of(")");
+		IN_commands = IN_commands.substr(index+1,string::npos);
+				
+		int i=0;
+		while(i < attributes.find(")")) {
+			string name = attributes.substr(i,attributes.find_first_of(",)", i)-i); 
+			i += name.length()+1;
+			name = trim(name);			
+			attribute_list.push_back(name);			
+		}
+	
+		Table renamefrom = createRelation(IN_name, IN_commands);
+		Table returnTable = Rename(IN_name, attribute_list, renamefrom);
+		
+	} else {
+		// relation-name
+		for(size_t i = 0; i<database.size(); i++){ //typical "find the table"
+			if(database[i].getName().compare(IN_commands) == 0){
+				returnTable = database[i];
+			}
+		}
+	}	
+		// check for post relational operators
+	cout << "inc = " << IN_commands << endl;	
+	if(IN_commands.substr(0,1).compare("+") == 0){	// or +
+		// new table <- project (Col3) select (Col1 == 1) test table
+	
+	} else if(IN_commands.substr(0,1).compare("-") == 0){	// or -
+	
+	} else if(IN_commands.substr(0,1).compare("*") == 0){	// or *
+	
+	} else if(IN_commands.substr(0,4).compare("JOIN") == 0){	
+	
+	} else {	// 
+		returnTable.setName(IN_name);
+		cout << returnTable << endl;
+		return returnTable;
+	}
+	
+}
 
+// trims the whitespaces before and after a string
+string trim(string IN_string) {
+	
+	// trim leading whitespace------------------------------
+	size_t startpos = IN_string.find_first_not_of(" ");
+	if(string::npos != startpos)
+	{
+		IN_string = IN_string.substr(startpos);
+	}
+	// trim trailing spaces--------------------------------
+	size_t endpos = IN_string.find_last_not_of(" ");
+	if(string::npos != endpos)
+	{
+		IN_string = IN_string.substr(0, endpos+1);
+	}
+	return IN_string;
+}
+	
+Node* parseCondition(string &condition) { 
+	int tree_index = 0;	
+	stack<string> constore;
+	constore.push("end");	// when end is popped condition parsing is done
+	string operand = "";
+	Node* recent = NULL; 
+	Node* root = &tree[tree_index];	// top most node
+	tree_index++;
+	
+	for(size_t i = 0; i < condition.length(); i++) {
+		char tok = condition[i];
+		//cout << "tok is " << tok << endl;
+		if(tok == '(') {			
+			constore.push("(");
+		} else if(tok == ')') {
+			// see if recent node needs right
+			if(recent != NULL) {
+				if(recent->right == NULL) {
+					if(operand != "") {
+						// create new node
+						Node* temp = &tree[tree_index];	
+						tree_index++;
+						temp->type = Conditions(2);
+						temp->value.push_back(operand);
+						recent->right = temp;
+						operand = "";
+					}
+				}
+			}	
+			// pop the corresponding "("
+			constore.pop();
+			// check to see if that was the last one
+			if(constore.top() == "end") {
+				condition = condition.substr(i+1, string::npos);  
+				break;	// break out of the for loop
+			}
+		} else if(tok == '&' || tok == '|') {
+			// get conjunction token
+			string con_token;
+			con_token.push_back(tok);
+			con_token.push_back(condition[i+1]);
+			i++;	
+			if(con_token == "&&" || con_token == "||") {
+								
+				// make root's right node
+				if(root != NULL) {
+					if(operand != "") {
+						// create new node for operand
+						Node* temp = &tree[tree_index];	
+						tree_index++;
+						temp->type = Conditions(2);
+						temp->value.push_back(operand);
+						root->right = temp;
+						operand = "";
+					} else {
+						// does this happen?			
+					}
+					
+					// build new node
+					Node* temp = &tree[tree_index];	
+					tree_index++;
+					temp->type = conjunction;
+					temp->value.push_back(con_token);
+					
+					// left node will be current root
+					temp->left = root;
+					// adjust the tree for the new new node
+					root = temp;
+				}				
+			}		
+		} else if(tok == '=' || tok == '!' || tok == '<' || tok == '>') {
+			// get op token
+			string op_token;
+			op_token.push_back(tok);
+			op_token.push_back(condition[i+1]);
+			i++; // make for loop skip the next tok
+			if(op_token == "==" || op_token == "!=" || op_token == "<=" 
+					|| op_token == ">=" || op_token == "< " || op_token == "> ") { // < or > ?
+				
+				// build new op node
+				Node* temp = &tree[tree_index];	
+				tree_index++;
+				temp->type = op;
+				temp->value.push_back(op_token);
+								
+				if(root != NULL) {
+					// check if root needs right node
+					if(root->left == NULL) {
+						root = temp;
+					} else if(root->right == NULL) {
+						root->right = temp;				
+					}
+				} else { // root is null
+					root = temp;	// op node is the root now
+				}
+				// add left node the new op node
+				if(operand != "") {
+					// build new operand node
+					Node* leftnode = &tree[tree_index];	
+					tree_index++;
+					leftnode->type = Conditions(2);	// operand
+					leftnode->value.push_back(operand);
+					temp->left = leftnode;	
+					operand = "";
+				}
+				recent = temp;
+			}
+		} else { 
+			// add to operand string		
+			if(tok!= ' ') operand += tok;
+		}		
+	}	
+	return root;	
+}
 void insertFromRelation(string IN_name, string IN_relation) {}
 
 void deleteData(string IN_name, string IN_relation) {}
@@ -931,6 +1155,11 @@ void parser(string IN_string){
 		int operPos = 0;
 		size_t locArrow = IN_string.find("<-");
 		string wholeStr = IN_string.substr(0);
+		/*
+		string tempName = IN_string.substr(0,locArrow-1);
+		string tempCommand = IN_string.substr(locArrow+3,IN_string.length());
+		createRelation(tempName,tempCommand);
+		*/
 
 		for(char& c : wholeStr) {
 			if(c != '+')
@@ -938,7 +1167,7 @@ void parser(string IN_string){
 			else
 				break;
 		}
-
+		
 		string tempName = IN_string.substr(0,locArrow-1);
 		cout << tempName << "X\n\r";
 		string tempCommand = IN_string.substr(locArrow+3,operPos - locArrow-4);
@@ -949,10 +1178,10 @@ void parser(string IN_string){
 		cout << tempCommand2 << "X\n\r";
 		if(operand == "+ ") { //Needs more checks for other operands
 			cout << "\n*********************\n\r";
-			cout << Union(tempName, tempCommand, tempCommand2, database);
+			Table uni = Union(tempName, tempCommand, tempCommand2, database); 
+			cout << uni;
 			cout << "\n*********************\n\r";
 		}
-		//createRelationTable(tempName,tempCommand);
 	} else {
 		cout << "Invalid command. (E640)\n";
 		return;
@@ -963,6 +1192,14 @@ void parser(string IN_string){
 
 int main(){
 	printf("WELCOME TO THE DBMS!\n");
+	
+	// tree to store nodes in
+	tree = new Node[20];
+	for(int i=0; i< 20; i++) {
+		tree[0] = Node();
+	}
+	atexit(release_tree);
+	
 	/*******TABLES FOR TESTING*******/
 	string name = "table1";
 		vector<string> colNames;
